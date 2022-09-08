@@ -1,0 +1,129 @@
+.input-div{
+    display: flex;
+    flex-direction: column;
+    width: min(600px, 80%);
+    margin: 0 auto 20px auto;
+    label{
+        font-weight: 600;
+        font-size: 20px;
+        color: $white-1;
+        margin-bottom: 2px;
+    }
+    input:not(.tag-input){
+        margin-top: 4px;
+        height: 50px;
+        border-radius: 6px;
+        padding-left: 10px;
+        background-color: $black-2;
+        border: 1px solid $white-2;
+        color: $white;
+        font-size: 20px;
+        outline: 0;
+        &:focus{
+            border: 1px solid $white;
+        }
+        &:hover{
+            border: 1px solid $white;
+        }
+    }
+    textarea{
+        resize: none;
+        width: 100%;
+        height: 300px;
+        border-radius: 6px;
+        box-sizing: border-box;
+        padding: 10px 20px;
+        border: 1px solid $white-2;
+        background-color: $black-2;
+        color: $white;
+        font-size: 20px;
+        font-family: inherit;
+        outline: 0;
+        &:focus{
+            border: 1px solid $white;
+        }
+        &:hover{
+            border: 1px solid $white;
+        }
+    }
+    .password-wrapper{
+        display: flex;
+        position: relative;
+        align-items: center;
+        input{
+            width: 100%;
+        }
+        span{
+            display: flex;
+            align-items: center;
+            position: absolute;
+            right: 5%;
+            animation: strike 300ms linear forwards;
+            svg{
+                height: 30px;
+                width: 30px;
+                g{
+                    path{
+                        fill: #fff;
+                    }
+                }
+                &:hover{
+                    cursor: pointer;
+                }
+                .mask-password-strikethrough{
+                    animation: strike 300ms linear forwards;
+                }
+            }
+            &.untoggled{
+                svg{
+                    .mask-password-strikethrough{
+                        animation: strike 300ms linear forwards;
+                        visibility: visible;
+                        @keyframes strike {
+                            0% {
+                                stroke-dashoffset: 0;
+                            } 100%{
+                                stroke-dashoffset: 102.32819366455078;
+                            }
+                        }
+                    }
+                }
+            }
+            &.toggled{
+                svg{
+                    .mask-password-strikethrough{
+                        animation: strike 300ms linear forwards;
+                        @keyframes strike {
+                            0% {
+                                stroke-dashoffset: 102.32819366455078;
+                            } 100%{
+                                stroke-dashoffset: 0;
+                            }
+                        }
+                        visibility: hidden;
+                    }
+                }
+            }
+        }
+    }
+}
+.two-div{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    .input-div{
+        margin-bottom: 20px;
+    }
+}
+.input-two-div{
+    width: min(600px, 80%);
+    margin: 0 auto 20px auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    .input-div{
+        width: 48%;
+        margin: 0;
+    }
+}

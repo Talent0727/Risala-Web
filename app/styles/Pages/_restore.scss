@@ -1,0 +1,76 @@
+.restore-main{
+    width: min(80%, 550px);
+    margin: auto;
+    background-color: $black-3;
+    padding: 40px 20px;
+    border-radius: 6px;
+    margin-bottom: 20vh;
+    .main-window{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        img{
+            width: 250px;
+            margin-bottom: 20px;
+        }
+        h1{
+            margin-bottom: 6px;
+        }
+        p{
+            text-align: center;
+            font-size: 20px;
+            margin-top: 0;
+            color: $white-1;
+        }
+        .lazy-load{
+            background-color: $black-2;
+            height: 40px;
+            width: 100%;
+            margin-bottom: 20px;
+            border-radius: 6px;
+        }
+        .fake-button{
+            display: flex;
+            justify-content: center;
+            width: 200px;
+        }
+        .password-input{
+            display: flex;
+            align-items: center;
+            position: relative;
+            width: 80%;
+            margin: 0 auto 20px auto;
+            div{
+                right: 10px;
+                position: absolute;
+            }
+        }
+        label{
+            width: 80%;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        input{
+            box-sizing: border-box;
+            height: 48px;
+            width: 100%;
+            border-radius: 6px;
+            background-color: $black-2;
+            color: $white;
+            padding-left: 10px;
+            border: 1px solid $white-2;
+            &:hover{
+                border: 1px solid $white-1;
+            }
+        }
+        button{
+            margin-top: 20px;
+            width: 200px;
+        }
+        .button{
+            margin-top: 20px;
+        }
+    }
+}

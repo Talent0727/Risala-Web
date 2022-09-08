@@ -1,0 +1,54 @@
+.circle-loader{
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid $yellow; 
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+    0% {transform: rotate(0deg);}
+    100% {transform: rotate(360deg);}
+}
+
+.lds-dual-ring {
+  display: inline-block;
+  &.large{
+    width: 80px;
+    height: 80px;
+    &:after {
+      content: " ";
+      display: block;
+      width: 80px;
+      height: 80px;
+      margin: 0px;
+      border-radius: 50%;
+      border: 16px solid #fff;
+      border-color: #fff transparent #fff transparent;
+      animation: lds-dual-ring 1.2s linear infinite;
+    }
+  }
+  width: 20px;
+  height: 20px;
+  &:after {
+    content: " ";
+    display: block;
+    width: 16px;
+    height: 16px;
+    margin: 0px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    border-color: #fff transparent #fff transparent;
+    animation: lds-dual-ring 1.2s linear infinite;
+  }
+}
+
+@keyframes lds-dual-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

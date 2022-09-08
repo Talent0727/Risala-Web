@@ -1,0 +1,119 @@
+.contact-wrapper{
+    padding-top: 10vh;
+    margin: auto;
+    @media screen and (min-width: 1300px){
+        width: 1200px;
+    }
+    @media screen and (min-width: 875px) and (max-width: 1300px){
+        width: min(1200px, 80%);
+    }
+    h1{
+        font-size: 50px;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    p{
+        @media screen and (min-width: 1200px){
+            width: 600px;
+        }
+        @media screen and (max-width: 1200px){
+            width: 80%;
+        }
+        text-align: center;
+        margin: auto;
+        font-size: 24px;
+    }
+    .contact-form-wrapper{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 40px;
+        #contact-me-index-btn{
+            width: min(300px, 100%);
+            font-size: 18px;
+        }
+    }
+}
+.text-wrapper{
+    width: 80%;
+    @media screen and (min-width: 875px){
+        margin: 0 auto 10vh auto;
+        padding-top: 10vh;
+    }
+    @media screen and (max-width: 875px){
+        margin: 0 auto;
+        padding: 0;
+        h1{
+            font-size: 46px;
+        }
+    }
+}
+
+#animate-test{
+    position: relative;
+    margin: auto;
+    @media screen and (min-width: 900px){
+        height: 80vh;
+        width: 800px;
+    }
+    @media screen and (max-width: 900px){
+        width: 300px;
+    }
+    #paper-plane-path{
+        @media screen and (min-width: 900px){
+            width: 100%;
+            height: 30vh;
+        }
+        @media screen and (max-width: 900px){
+            width: 80%;
+            height: 30vh;
+        }
+        path{
+            animation: path 600ms linear forwards;
+            fill:none;
+            stroke:#FFFFFF;
+            stroke-width:6;
+            stroke-miterlimit:10;
+            stroke-dasharray: 1184.063232421875;
+            stroke-dashoffset: 1184.063232421875;
+        }
+        @keyframes path {
+            0% {
+                stroke-dashoffset: 1184.063232421875;
+            }
+            99% {
+                stroke-dashoffset: 0;
+                stroke-dasharray: 1184.063232421875;
+            }
+            100% {
+                stroke-dashoffset: 0;
+                stroke-dasharray: 11;
+            }
+        }
+    }
+    #paper-plane{
+        transform: rotate(20deg);
+        position: absolute;
+        @media screen and (min-width: 900px){
+            width: 200px;
+            height: 200px;
+            right: 10%;
+            top: -2%;
+        }
+        @media screen and (max-width: 900px){
+            width: 100px;
+            height: 100px;
+            right: 10%;
+            top: 17%;
+        }
+        opacity: 0;
+        animation: paperplane 300ms linear forwards;
+        animation-delay: 400ms;
+        @keyframes paperplane {
+            to{
+                opacity: 1;
+                right: 0%;
+            }
+        }
+    }
+}

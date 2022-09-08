@@ -1,0 +1,153 @@
+#main-request{
+    #request-panel-wrapper{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 90%;
+        margin: 20px auto;
+        color: #000;
+        .request-panel{
+            background-color: #fff;
+            border-radius: 3px;
+            border: 1px solid #d4d4d4;
+            padding: 20px;
+        }
+        #left-panel{
+            width: calc(30% - 40px);
+            h2{
+                margin-top: 0;
+            }
+            .left-panel-section{
+                border-top: 1px solid #d4d4d4;
+                border-bottom: 1px solid #d4d4d4;
+                transition: height 1s ease-out;
+                user-select: none;
+                &:nth-last-child(1){
+                    margin-top: 20px;
+                }
+                .left-panel-section-header{
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: space-between;
+                    svg{
+                        width: 30px;
+                        height: 30px;
+                        transition: transform 0.5s ease;
+                    }
+                    &:hover{
+                        cursor: pointer;
+                        opacity: 0.8;
+                    }
+                    &[aria-label="visible"]{
+                        svg{
+                            transform: rotate(45deg);
+                        }
+                        & ~ .request-wrapper-left{
+                            display: block;
+                            background-color: #f4f4f4;
+                            padding: 10px;
+                            border-radius: 3px;
+                            margin-bottom: 10px;
+                            user-select: none;
+                            &:hover{
+                                cursor: pointer;
+                                background-color: #b4b4b4;
+                            }
+                            div{
+                                p{
+                                    margin: 0;
+                                }
+                            }
+                        }
+                    }
+                    &[aria-label="hidden"]{
+                        & ~ a{
+                            display: none;
+                        }
+                    }
+                }
+                .request-wrapper-left{
+                    &[aria-label="selected"]{
+                        background-color: #b4b4b4;
+                    }
+                }
+            }
+        }
+        #main-panel{
+            width: calc(68% - 40px);
+            .main-panel-row{
+                #article-not-found{
+                    h1{
+                        text-align: center;
+                    }
+                    svg{
+                        width: 70%;
+                        height: 70%;
+                    }
+                }
+                &:nth-child(1){
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+                    align-items: center;
+                    position: relative;
+                    #main-panel-title{
+                        margin-top: 0;
+                        span{
+                            opacity: 0.8;
+                            margin-left: 10px;
+                        }
+                    }
+                    #options-list-button{
+                        background-color: #fff;
+                        border: none;
+                        svg{
+                            width: 40px;
+                            height: 40px;
+                        }
+                        &:hover{
+                            cursor: pointer;
+                        }
+                    }
+                    #options-list{
+                        position: absolute;
+                        right: 0;
+                        top: 40px;
+                        overflow: hidden;
+                        height: 0px;
+                        width: 0px;
+                        padding: 0px;
+                        border-radius: 6px;
+                        &[aria-label="visible"]{
+                            height: auto;
+                            width: auto;
+                            box-shadow: 2px 2px 2px #000;
+                            background-color: #fff;
+                            border: 1px solid #d4d4d4;
+                        }
+                        ul{
+                            list-style-type: none;
+                            padding: 0;
+                            margin: 0;
+                            li{
+                                display: flex;
+                                flex-direction: row;
+                                align-items: center;
+                                font-size: 18px;
+                                padding: 10px 20px;
+                                svg{
+                                    margin-right: 10px;
+                                }
+                                &:hover{
+                                    background-color: #f4f4f4;
+                                    cursor: pointer;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

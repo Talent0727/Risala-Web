@@ -1,0 +1,139 @@
+body{
+    margin: 0;
+    padding: 0;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    overflow-x: hidden;
+    color: $white;
+    background-color: $black-1;
+}
+.dark-mode{
+    background-color: $black-1;
+    color: #fff;
+}
+.light-mode{
+    background-color: $white;
+    color: black;
+}
+.total-wrapper{
+    display: none;
+}
+.load-wrapper{
+    height: 100vh;
+    width: 100%;
+    background-color: $dark-blue;
+}
+.main{
+    @media screen and (min-width: 1000px){
+        padding-top: 64px;
+    }
+    @media screen and (max-width: 1000px){
+        padding-top: 70px;
+    }
+}
+
+.dark{
+    background-color: $dark-blue;
+}
+.yellow{
+    color: $yellow;
+}
+.yellow-underline{
+    border-bottom: 1px solid $yellow;
+}
+a{
+    text-decoration: none;
+    color: inherit;
+    &:active{
+        text-decoration: none;
+        color: inherit;
+    }
+}
+//buttons
+.input{
+    height: 36px;
+    width: 50vw;
+    border-radius: 3px;
+    border: 1px solid black;
+    padding-left: 8px;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+.input-label{
+    font-size: 18px;
+    font-weight: bold;
+}
+#darkBackground{
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.514);
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 100%;
+    z-index: 10;
+    @media(min-width:875px){
+        height: 100%;
+        width: 100%;
+    }
+    @media(max-width:875px){
+        height: 100vh;
+        width: 100vw;
+    }
+}
+#popupWindow{
+    color: #fff;
+    z-index: 20;
+    @media(min-width:875px){
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        width: 300px;
+        right: 40%;
+        top: 40%;
+        border-radius: 6px;
+        background-color: $dark-blue1;
+        p{
+            margin: 20px;
+            font-size: 18px;
+        }
+        button{
+            width: 100%;
+            padding: 10px 0;
+            border-top: 1px solid black;
+            border-style: none;
+            background-color: $yellow;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            &:hover{
+                opacity: 0.8;
+                cursor: pointer;
+            }
+        }
+    }
+    @media(max-width:875px){
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        width: 60vw;
+        right: 40%;
+        top: 40%;
+        border-radius: 6px;
+        background-color: $dark-blue1;
+        p{
+            margin: 20px;
+            font-size: 18px;
+        }
+        button{
+            width: 100%;
+            padding: 10px 0;
+            border-top: 1px solid black;
+            border-style: none;
+            background-color: $yellow;
+            border-bottom-left-radius: 6px;
+            border-bottom-right-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    }
+}

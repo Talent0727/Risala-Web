@@ -1,0 +1,41 @@
+#about-me{
+    section{
+        width: min(1200px, 90%);
+        margin: 0 auto 10vh auto;
+        h1{
+            font-size: 50px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        p{
+            margin: 0;
+            font-size: 24px;
+            width: 90%;
+            margin: auto;
+        }
+        h2{
+            font-size: 44px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+    }
+    .call-to-action-wrapper{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        p{
+            @media screen and (min-width: 1000px){
+                width: 50%;
+            }
+            @media screen and (max-width: 1000px){
+                width: 100%;
+            }
+            text-align: center;
+        }
+        a{
+            text-align: center;
+            margin-top: 20px;
+            width: 200px;
+        }
+    }
+}

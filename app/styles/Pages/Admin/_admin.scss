@@ -1,0 +1,758 @@
+@media(min-width:875px){
+    #admin{
+        #adminpannel-wrapper{
+            display: flex;
+            flex-direction: row;
+            #adminpannel-side-menu{
+                background-color: $black-3;
+                width: 200px;
+                padding-left: 10px;
+                padding-top: 10px;
+                border-top-right-radius: 6px;
+                border-bottom-right-radius: 6px;
+                height: calc(100vh - 100px);
+                .admin-side-wrapper{
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                    height: calc(100% - 10px);
+                    .admin-side-options{
+                        .admin-side-menu-row{
+                            display: flex;
+                            flex-direction: row;
+                            align-items: center;
+                            padding: 10px;
+                            span{
+                                display: flex;
+                                align-content: center;
+                                svg{
+                                    fill: #fff;
+                                }
+                                &:last-child{
+                                    margin-left: 10px;
+                                    user-select: none;
+                                }
+                            }
+                            &:hover{
+                                cursor: pointer !important;
+                                background-color: $black-1;
+                                border-bottom-left-radius: 20px;
+                                border-top-left-radius: 20px;
+                            }
+                            &[data-selected="true"]{
+                                border-bottom-left-radius: 20px;
+                                border-top-left-radius: 20px;
+                                background-color: $black-1;
+                            }
+                        }
+                    }
+                    .profile-admin-side{
+                        display: flex;
+                        flex-direction: row;
+                        align-items: center;
+                        justify-content: space-between;
+                        max-width: 90%;
+                        margin-bottom: 20px;
+                        figure{
+                            width: 40px;
+                            height: 40px;
+                            overflow: hidden;
+                            margin: 0;
+                            border-radius: 50%;
+                            img{
+                                width: 100%;
+                                height: 100%;
+                                object-fit: cover;
+                            }
+                        }
+                        span{
+                            font-weight: 600;
+                        }
+                        svg{
+                            fill: #fff;
+                        }
+                    }
+                }
+            }
+            #adminpannel-main-window{
+                width: calc(100% - 200px);
+                background-color: $black-1;
+                min-height: 80vh;
+                overflow-y: auto;
+                .admin-content-wrapper{
+                    display: flex;
+                    flex-direction: column;
+                    padding: 20px;
+                    .admin-header{
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 20px;
+                        h1{
+                            margin: 0;
+                        }
+                    }
+                    .request-row{
+                        .request-highlighted{
+                            background-color: $yellow;
+                            padding: 6px 10px;
+                            margin-left: 10px;
+                            border-radius: 6px;
+                        }
+                    }
+                    #file-management-view{
+                        display: flex;
+                        flex-direction: column;
+                        .fileContextMenu{
+                            position: absolute;
+                            display: flex;
+                            flex-direction: column;
+                            background-color: $black-3;
+                            border-radius: 6px;
+                            border: 1px solid $white-2;
+                            width: 200px;
+                            a{
+                                width: calc(100% - 20px);
+                                padding: 18px 10px;
+                                font-size: 18px;
+                                &:nth-child(1){
+                                    &:hover{
+                                        border-top-left-radius: 6px;
+                                        border-top-right-radius: 6px;
+                                    }
+                                }
+                                &:nth-last-child(1){
+                                    &:hover{
+                                        border-bottom-left-radius: 6px;
+                                        border-bottom-right-radius: 6px;
+                                    }
+                                }
+                                &:hover{
+                                    background-color: $black-1;
+                                    cursor: pointer;
+                                }
+                            }
+                        }
+                        .file-path-header{
+                            display: flex;
+                            flex-direction: row;
+                            align-items: center;
+                            justify-content: space-between;
+                            font-size: 24px;
+                            margin-bottom: 16px;
+                            div{
+                                display: flex;
+                                flex-direction: row;
+                            }
+                            .directory-link{
+                                margin: 0 6px;
+                                &:hover{
+                                    cursor: pointer;
+                                    color: $yellow;
+                                }
+                            }
+                            .separator{
+                                font-style: bold;
+                            }
+                        }
+                        .directory-header{
+                            display: flex;
+                            flex-direction: row;
+                            align-items: center;
+                            padding: 4px 10px;
+                            &:hover{
+                                cursor: pointer;
+                                background-color: $black-2;
+                            }
+                            p{
+                                margin: 4px 0 4px 10px;
+                                font-size: 22px;
+                            }
+                            img{
+                                width: 20px;
+                                height: 20px;
+                            }
+                        }
+                    }
+                }
+                #admin-accountsettings-window{
+                    #admin-settings-wrapper{
+                        display: flex;
+                        flex-direction: row;
+                        #admin-settings-left-list{
+                            width: 200px;
+                            #settings-option-list{
+                                ul{
+                                    padding: 0;
+                                    margin: 0;
+                                    list-style-type: none;
+                                    .settings-list{
+                                        display: flex;
+                                        flex-direction: row;
+                                        align-items: center;
+                                        font-weight: bold;
+                                        padding: 6px 12px;
+                                        margin-bottom: 8px;
+                                        &[data-selected="true"]{
+                                            background-color: $yellow;
+                                            border-radius: 20px;
+                                            span{
+                                                &:first-child{
+                                                    svg{
+                                                        fill: black;
+                                                    }
+                                                }
+                                                &:last-child{
+                                                    color: black;
+                                                }
+                                            }
+                                        }
+                                        &[data-selected="false"]{
+                                            &:hover{
+                                                background-color: $yellow;
+                                                border-radius: 20px;
+                                                cursor: pointer;
+                                                span{
+                                                    &:first-child{
+                                                        svg{
+                                                            fill: black;
+                                                        }
+                                                    }
+                                                    &:last-child{
+                                                        color: black;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        span{
+                                            display: flex;
+                                            align-items: center;
+                                            &:first-child{
+                                                svg{
+                                                    fill: #fff;
+                                                    width: 30px;
+                                                    height: 30px;
+                                                }
+                                            }
+                                            &:last-child{
+                                                padding-left: 10px;
+                                                font-size: 14px;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        #admin-settings-main{
+                            overflow-y: auto;
+                            width: calc(100% - 200px);
+                            .settings-main-window{
+                                padding: 20px;
+                                overflow-x: hidden;
+                                .input-label{
+                                    display: flex;
+                                    flex-direction: column;
+                                    margin-bottom: 10px;
+                                    label{
+                                        margin: 0;
+                                    }
+                                    input{
+                                        margin-top: 10px;
+                                        background-color: $black-3;
+                                        border: 1px solid transparent;
+                                        height: 50px;
+                                        color: #fff;
+                                        &:hover{
+                                            border: 1px solid $white;
+                                        }
+                                    }
+                                    div{
+                                        width: calc(100% - 200px);
+                                        display: flex;
+                                        align-items: center;
+                                        input{
+                                            margin-bottom: 0;
+                                            background-color: $black-3;
+                                            color: $white;
+                                        }
+                                        .password-toggle{
+                                            width: 30px;
+                                            height: 30px;
+                                            position: relative;
+                                            svg{
+                                                width: 30px;
+                                                height: 30px;
+                                                fill: #fff;
+                                            }
+                                            &:hover{
+                                                cursor: pointer;
+                                            }
+                                            &.visible{
+                                                svg{
+                                                    g{
+                                                        &:nth-last-child(1){
+                                                            visibility: hidden;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                .renameWindow{
+                    position: absolute;
+                    width: 400px;
+                    top: 25%;
+                    left: calc(50% - 200px);
+                    display: flex;
+                    flex-direction: column;
+                    background-color: $black-3;
+                    border: 1px solid $white-2;
+                    border-radius: 6px;
+                    padding: 16px 24px;
+                    label{
+                        margin-bottom: 10px;
+                    }
+                    button{
+                        margin-top: 30px;
+                    }
+                    a{
+                        position: absolute;
+                        top: 20px;
+                        right: 20px;
+                        &:hover{
+                            cursor: pointer;
+                        }
+                    }
+                }
+            }
+        }
+        .file-editor-wrapper{
+            position: absolute;
+            z-index: 15;
+            top: 63px;
+            width: 100%;
+            .file-editor-top-panel{
+                background-color: $black-1;
+            }
+        }
+    }
+}
+
+//Mobile Settings
+@media(max-width:875px) {
+    #admin{
+        #adminpannel-wrapper{
+            display: flex;
+            flex-direction: column;
+            #adminpannel-side-menu{
+                display: flex;
+                position: fixed;
+                flex-direction: row;
+                background-color: $black-3;
+                width: 100vw;
+                height: 10vh;
+                overflow: hidden;
+                bottom: 0px;
+                z-index: 12;
+                .admin-side-wrapper{
+                    display: flex;
+                    flex-direction: column;
+                    overflow-x: scroll;
+                    justify-content: space-around;
+                    width: 100%;
+                    .admin-side-options{
+                        display: flex;
+                        flex-direction: row;
+                        .admin-side-menu-row{
+                            display: flex;
+                            flex-direction: row;
+                            align-items: center;
+                            padding: 10px;
+                            width: auto;
+                            height: auto;
+                            border-radius: 20px;
+                            span{
+                                display: flex;
+                                align-content: center;
+                                svg{
+                                    fill: #fff;
+                                    margin-right: 10px;
+                                }
+                                .side-menu-header{
+                                    user-select: none;
+                                }
+                            }
+                            &:hover{
+                                cursor: pointer;
+                                background-color: #d4d4d4;
+                                color: black;
+                                span{
+                                    svg{
+                                        fill: black;
+                                    }
+                                }
+                            }
+                            &[data-selected="true"]{
+                                &:nth-child(5), :nth-child(6){
+                                    .side-menu-icon{
+                                        svg{
+                                            fill: $yellow;
+                                        }
+                                    }
+                                }
+                                &:not(:nth-child(5), :nth-child(6)){
+                                    .side-menu-icon{
+                                        &:not(:nth-last-child(1)){
+                                            svg{
+                                                path{
+                                                    fill: $yellow;
+                                                }
+                                            }
+                                        }
+                                        &:nth-last-child(1){
+                                            svg{
+                                                fill: $yellow;
+                                            }
+                                        }
+            
+                                    }
+                                }
+                                .side-menu-header{
+                                    color: $yellow;
+                                }
+                            }
+                        }
+                    }
+                    .profile-admin-side{
+                        display: none;
+                    }
+                }
+            }
+            #adminpannel-main-window{
+                width: 100vw;
+                background-color: $black-1;
+                min-height: 80vh;
+                .admin-content-wrapper{
+                    display: flex;
+                    flex-direction: column;
+                    padding: 20px;
+                    .admin-header{
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 20px;
+                        h1{
+                            margin: 0;
+                        }
+                    }
+                    .request-row{
+                        .request-highlighted{
+                            background-color: $yellow;
+                            padding: 6px 10px;
+                            margin-left: 10px;
+                            border-radius: 6px;
+                        }
+                    }
+                    #file-management-view{
+                        display: flex;
+                        flex-direction: column;
+                        .file-path-header{
+                            display: flex;
+                            flex-direction: column-reverse;
+                            div{
+                                padding: 14px 0;
+                                display: flex;
+                                flex-direction: row;
+                                align-items: center;
+                                flex-wrap: wrap;
+                                max-width: 100vw;
+                                .directory-link{
+                                    margin: 0 6px;
+                                    font-size: 20px;
+                                    padding: 0;
+                                }
+                            }
+                        }
+                        .directory-header{
+                            display: flex;
+                            flex-direction: row;
+                            align-items: center;
+                            &:hover{
+                                cursor: pointer;
+                                background-color: $black-2;
+                            }
+                            p{
+                                margin: 4px 0 4px 10px;
+                                font-size: 22px;
+                            }
+                            img{
+                                width: 20px;
+                            }
+                        }
+                        .fileContextMenu{
+                            display: flex;
+                            flex-direction: column;
+                            position: absolute;
+                            border: 1px solid $white-2;
+                            border-radius: 6px;
+                            background-color: $black-3;
+                            padding: 16px 20px;
+                            width: 100px;
+                            a{
+                                padding: 10px 0;
+                                text-align: center;
+                            }
+                        }
+                    }
+                }
+                #admin-accountsettings-window{
+                    #admin-settings-wrapper{
+                        display: flex;
+                        flex-direction: row;
+                        #admin-settings-left-list{
+                            width: 200px;
+                            #settings-option-list{
+                                ul{
+                                    padding: 0;
+                                    margin: 0;
+                                    list-style-type: none;
+                                    .settings-list{
+                                        display: flex;
+                                        flex-direction: row;
+                                        align-items: center;
+                                        font-weight: bold;
+                                        padding: 6px 12px;
+                                        margin-bottom: 8px;
+                                        &[data-selected="true"]{
+                                            background-color: $yellow;
+                                            border-radius: 20px;
+                                            span{
+                                                &:first-child{
+                                                    svg{
+                                                        fill: black;
+                                                    }
+                                                }
+                                                &:last-child{
+                                                    color: black;
+                                                }
+                                            }
+                                        }
+                                        &[data-selected="false"]{
+                                            &:hover{
+                                                background-color: $yellow;
+                                                border-radius: 20px;
+                                                cursor: pointer;
+                                                span{
+                                                    &:first-child{
+                                                        svg{
+                                                            fill: black;
+                                                        }
+                                                    }
+                                                    &:last-child{
+                                                        color: black;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        span{
+                                            display: flex;
+                                            align-items: center;
+                                            &:first-child{
+                                                svg{
+                                                    fill: #fff;
+                                                    width: 20px;
+                                                    height: 20px;
+                                                }
+                                            }
+                                            &:last-child{
+                                                padding-left: 10px;
+                                                font-size: 14px;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        #admin-settings-main{
+                            overflow-y: auto;
+                            width: calc(100% - 200px);
+                            .settings-main-window{
+                                padding: 20px;
+                                overflow-x: hidden;
+                                .input-label{
+                                    display: flex;
+                                    flex-direction: column;
+                                }
+                            }
+                        }
+                    }
+                }
+                .renameWindow{
+                    position: absolute;
+                    background-color: $black-3;
+                    border: 1px solid $white-2;
+                    border-radius: 6px;
+                    top: 25%;
+                    left: 5%;
+                    padding: 20px;
+                    width: calc(90vw - 40px);
+                    a{
+                        position: absolute;
+                        top: 5%;
+                        right: 5%;
+                        font-size: 30px;
+                    }
+                    input{
+                        margin-top: 20px;
+                    }
+                    button{
+                        margin-top: 20px;
+                    }
+                }
+            }
+        }
+        .file-editor-wrapper{
+            position: absolute;
+            top: 70px;
+            width: 100vw;
+            .file-editor-top-panel{
+                background-color: $black-3;
+            }
+        }
+    }
+}
+
+.request-wrapper{
+    background-color: $black-3;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    border: 1px solid $black-3;
+    &:hover{
+        border: 1px solid $white-1;
+        cursor: pointer;
+    }
+    div{
+        display: flex;
+        flex-direction: row;
+        p{
+            margin-top: 0;
+            &:nth-child(1){
+                margin-right: 20px;
+            }
+        }
+    }
+    p{ 
+        &:nth-child(1){
+            margin: 0;
+        }
+        &:nth-last-child(1){
+            margin-bottom: 0;
+        }
+    }
+}
+.timeWindow{
+    font-size: 40px;
+}
+.weatherWindow{
+    display: flex;
+    flex-direction: row;
+    .w-day{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 250px;
+        padding: 20px;
+        background-color: $black-2;
+        border-radius: 8px;
+        min-height: 230px;
+        &:not(:nth-child(1), :nth-last-child(1)){
+            margin: 0 10px;
+        }
+        &:nth-child(1){
+            margin-right: 10px;
+        }
+        &:nth-last-child(1){
+            margin-left: 10px;
+        }
+        .w-header{
+            font-size: 40px;
+        }
+        .w-range{
+            display: flex;
+            flex-direction: column;
+            align-self: flex-start;
+            margin-top: auto;
+            p{
+                font-size: 24px;
+                margin: 0 10px;
+                &:nth-child(1){
+                    color: $yellow;
+                    span{
+                        &:nth-last-child(1){
+
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+.tag-box{
+    display: flex;
+    flex-wrap: wrap;
+    padding: 24px 16px 8px 10px;
+    background-color: $black-2;
+    outline: 0;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    border: 1px solid transparent;
+    &:hover{
+        border: 1px solid $white;
+    }
+    input{
+        width: 100px;
+        background-color: transparent;
+        padding: 0;
+        margin-bottom: 0;
+        height: 100%;
+        color: $white;
+        border: 1px solid transparent;
+        &:focus{
+            border: 1px solid $black-2;
+        }
+    }
+    .tag{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        background-color: $black-2;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        padding: 4px 6px;
+        margin-bottom: 10px;
+        margin-right: 10px;
+        &:hover{
+            border: 1px solid $white;
+        }
+        span{
+            margin-left: 6px;
+            &:hover{
+                cursor: pointer;
+            }
+        }
+    }
+}
+
+@import 'createuser';
+@import 'adminCMS';

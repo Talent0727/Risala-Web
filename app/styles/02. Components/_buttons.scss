@@ -1,0 +1,73 @@
+.button-yellow{
+    border: 1px solid transparent;
+    background-color: $yellow;
+    padding: 10px 20px;
+    font-weight: bold;
+    color: $black-1;
+    transition: 600ms background-color ease;
+    &:hover{
+        cursor: pointer;
+        background-color: transparent;
+        border: 1px solid $yellow;
+        color: $yellow;
+    }
+    &-round{
+        @extend .button-yellow;
+        border-radius: 20px;
+    }
+    &-square{
+        @extend .button-yellow;
+        border-radius: 6px;
+    }
+}
+.button-white{
+    border: 1px solid transparent;
+    background-color: $white;
+    padding: 10px 20px;
+    font-weight: bold;
+    color: $black-1;
+    transition: 600ms background-color ease;
+    &:hover{
+        cursor: pointer;
+        background-color: transparent;
+        border: 1px solid $white;
+        color: $white;
+    }
+    &-round{
+        @extend .button-white;
+        border-radius: 20px;
+    }
+    &-square{
+        @extend .button-white;
+        border-radius: 6px;
+    }
+}
+.button-yellow-hollow{
+    border: 2px solid $yellow;
+    padding: 10px 20px;
+    font-weight: bold;
+    color: $yellow;
+    background-color: $black-1;
+    transition: 600ms background-color ease;
+    &:hover{
+        background-color: $yellow;
+        color: black;
+        cursor: pointer;
+    }
+    &-round{
+        @extend .button-yellow-hollow;
+        border-radius: 20px;
+    }
+    &-square{
+        @extend .button-yellow-hollow;
+        border-radius: 6px;
+    }
+}
+.button-dark-round{
+    border-radius: 20px;
+    border-style: none;
+    background-color: $dark-blue;
+    padding: 10px 20px;
+    font-weight: bold;
+    color: #fff;
+}
