@@ -75,7 +75,6 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
             socket.on('call-exit', (data) => {
                 if(data.initiator === USER_DATA.account_id || data.callSettings.initiator === USER_DATA.account_id){
                     if(data.joined.length === 1){
-                        
                         callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, true)
                     } else {
                         callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, false)
@@ -92,10 +91,8 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
     }, [socket.connected])
 
     useEffect(() => {
-        if(timer === 20 && callSettings){
-            if(callSettings.joined.length > 1){
-                console.log("More than 1 joined")
-            } else if(callSettings.joined.length <= 1 && callSettings.initiator === USER_DATA.account_id){
+        if(timer === 30 && callSettings){
+            if(callSettings.joined.length <= 1 && callSettings.initiator === USER_DATA.account_id){
                 callMessage(socket, callSettings, timeStamp, true)
                 callTerminated()
                 socket.emit('call-exit', {
@@ -223,13 +220,13 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
 
             // If you are not the initiator, then send a signal back to the one who sent the signal to
             // begin with in order to "answer" the signal
-            if(!peer.initiator){
+            if(!peer.initiator || callSettings.initiator !== USER_DATA.account_id){
                 peer.signal(callSettings.signalData)
             }
 
             peer.on('signal', (signal) => {
                 // The reciever
-                if(!peer.initiator){
+                if(!peer.initiator || callSettings.initiator !== USER_DATA.account_id){
 
                     var callObject = {
                         id: callSettings.id,

@@ -11,8 +11,6 @@ export default function callMessage(socket, callSettings, callTime = null, isMis
     const COUNTER_DATA = state.COUNTER_DATA
     const USER_DATA = state.USER_DATA
 
-    console.log(callSettings, callTime)
-
     var textObject = {
         purpose: callSettings.purpose,
         time: callTime

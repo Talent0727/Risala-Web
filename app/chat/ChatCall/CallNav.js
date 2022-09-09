@@ -106,7 +106,7 @@ export default function CallNav({ callSettings, isPresenting, screenShare, stopS
                             onClick={stopCamera}
                             style={{backgroundColor: !isCam ? "#e62b2b" : null}}
                         >
-                            { isCam ? "videocam_off" : "videocam" }
+                            { isCam ? "videocam" : "videocam_off" }
                         </i>
                     </>
 

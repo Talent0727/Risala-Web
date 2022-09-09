@@ -10,9 +10,7 @@ const current       =   state.current
 function callInit(data){
 
     if(data.initiator){
-        if(data.initiator === USER_DATA.account_id){
-
-        } else {
+        if(data.initiator !== USER_DATA.account_id){
             store.dispatch(chatReducer({
                 callSettings: {
                     isActive: true,

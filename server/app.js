@@ -113,8 +113,6 @@ io.on('connection', (socket) => {
     /*                        CALLS                        */
     /*******************************************************/
     socket.on('call-init', (data) => {
-        console.log(data)
-
         if(data.purpose === 'call'){
             socket.broadcast.to(data.room).emit('call-init', data)
         } else {
@@ -127,16 +125,12 @@ io.on('connection', (socket) => {
     })
 
     socket.on('call-join', (data) => {
+        console.log(data)
         socket.to(data.room).emit('call-join', data)
     })
 
     socket.on('call-exit', (data) => {
         socket.to(data.room).emit('call-exit', data)
-    })
-
-    // Is this route being used?
-    socket.on('call-signal', (data) => {
-        socket.to(data.room).emit('call-signal', data)
     })
 
     socket.on('call-message', (data) => {
