@@ -62,9 +62,11 @@ export default function Restore({setSignUp, setRestore}){
                 <div id="wrong-password">
                   <span><i className="material-icons">lock</i></span>
                   <span>
-                    {locale !== "sv"
+                    {
+                      locale !== "sv"
                       ? "The username provided could not be found. Please try again"
-                      : "Användarnamnet du angav är felaktigt. Var god och försök igen"}
+                      : "Användarnamnet du angav är felaktigt. Var god och försök igen"
+                    }
                   </span>
                 </div>
               }
@@ -91,11 +93,11 @@ export default function Restore({setSignUp, setRestore}){
                       locale === "en" ? "Already have an account?" : "Har du redan ett konto?"
                     } 
                     <span 
-                        className="create-account" 
-                        onClick={(() => { 
-                            setSignUp(false) 
-                            setRestore(false)
-                        })}
+                      className="create-account" 
+                      onClick={(() => { 
+                        setSignUp(false) 
+                        setRestore(false)
+                      })}
                     >
                       { locale === "en" ? "Sign in" : "Logga in"}
                     </span>
@@ -107,10 +109,10 @@ export default function Restore({setSignUp, setRestore}){
                     <span 
                       className="create-account" 
                       onClick={(() => { 
-                          setSignUp(true) 
-                          setRestore(false)
+                        setSignUp(true) 
+                        setRestore(false)
                       })}
-                  >
+                    >
                       { locale === "en" ? "Sign up" : "Skapa konto"}
                     </span>
                   </p>

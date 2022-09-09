@@ -1,13 +1,8 @@
 import React, { useEffect, useRef, useState } from "react"
 import useLocale from "../hooks/useLocale";
-import axios from 'axios';
 import Layout from "../components/layout"
-import { createCookie, getCookie} from "../modules/cookie"
 import { useRouter } from "next/router";
 import { errorManagement, postRequest } from "../api/api";
-
-//Firebase
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider} from 'firebase/auth';
 
 //Components
 import SignIn from '../login/SignIn';

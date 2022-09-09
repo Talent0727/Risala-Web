@@ -16,7 +16,7 @@ const app = express()
 const httpServer = createServer(app);
 const io = new Server(httpServer, {   
     cors: { 
-        origin: ['http://localhost:3000', 'http://localhost:800', 'https://risala.codenoury.se'],
+        origin: JSON.parse(process.env.CORS_ORIGIN),
         methods: ["GET", "POST"]
     },
 });
@@ -97,12 +97,10 @@ io.on('connection', (socket) => {
     })
 
     socket.on('group-exit', (data) => {
-        console.log(`Group-Exit: ${data}`)
         socket.to(data.room).emit('group-exit', data) //data.room is a single id
     })
 
     socket.on('group-join', (data) => {
-        console.log(`Group-Join: ${data}`)
         socket.to(data).emit('group-join') //Data is an array of ids
     })
 
@@ -110,9 +108,6 @@ io.on('connection', (socket) => {
     socket.on('join', (data) => {
         socket.join(data)
     })
-
-
-
 
     /*******************************************************/
     /*                        CALLS                        */
@@ -136,13 +131,11 @@ io.on('connection', (socket) => {
     })
 
     socket.on('call-exit', (data) => {
-        console.log('call-exit', data)
         socket.to(data.room).emit('call-exit', data)
     })
 
     // Is this route being used?
     socket.on('call-signal', (data) => {
-        console.log('call-signal', data)
         socket.to(data.room).emit('call-signal', data)
     })
 

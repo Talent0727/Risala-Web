@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
 import useLocale from "../hooks/useLocale";
-import axios from 'axios';
 import Layout from "../components/layout";
 import { useRouter } from "next/router";
 import { errorManagement, postRequest } from "../api/api";
@@ -77,9 +76,11 @@ export default function SignIn({setSignUp, setRestore}){
               <div id="wrong-password">
                 <span><i className="material-icons">lock</i></span>
                 <span>
-                  {locale !== "sv"
+                  {
+                    locale !== "sv"
                     ? "Wrong username/password entered. Please try again"
-                    : "Användarnamnet/Lösenorder du angav är felaktigt. Var god och försök igen"}
+                    : "Användarnamnet/Lösenorder du angav är felaktigt. Var god och försök igen"
+                  }
                 </span>
               </div>
             }
@@ -125,9 +126,7 @@ export default function SignIn({setSignUp, setRestore}){
               {locale !== "sv" ? "Sign in" : "Logga in"}
             </button>
             <p className="new-account">
-              {
-                locale === "en" ? "Don't have an account?" : "Har du inget konto?"
-              } 
+              {locale === "en" ? "Don't have an account?" : "Har du inget konto?"} 
               <span className="create-account" onClick={(() => { setSignUp(true) })}>
                 { locale === "en" ? "Sign up" : "Skapa konto"}
               </span>
@@ -139,10 +138,10 @@ export default function SignIn({setSignUp, setRestore}){
               <span 
                 className="create-account" 
                 onClick={(() => { 
-                    setSignUp(false) 
-                    setRestore(true)
+                  setSignUp(false) 
+                  setRestore(true)
                 })}
-            >
+              >
                 { locale === "en" ? "Restore account" : "Skapa konto"}
               </span>
             </p>

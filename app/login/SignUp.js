@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
 import useLocale from "../hooks/useLocale";
-import axios from 'axios';
 import Layout from "../components/layout";
 import { useRouter } from "next/router";
 import { errorManagement, postRequest } from "../api/api";
@@ -240,8 +239,8 @@ export default function SignUp({setSignUp, setRestore}){
           <span 
             className="create-account" 
             onClick={(() => { 
-                setSignUp(false) 
-                setRestore(true)
+              setSignUp(false) 
+              setRestore(true)
             })}
         >
             { locale === "en" ? "Restore account" : "Återställ konto"}
