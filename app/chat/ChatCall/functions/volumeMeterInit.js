@@ -24,9 +24,9 @@ export default function volumeMeterInit(stream, target, purpose){
     var value = (200 + (200 * (average / 100)))
     
     //console.log(average)
-    if(purpose === "call"){
+    if(purpose === "call" && target){
       target.style.cssText = `width: ${value}px; height: ${value}px;`
-    } else if(purpose === "video"){
+    } else if(purpose === "video" && target){
       if(value > 0){
         target.classList.add('audio')
       } else {

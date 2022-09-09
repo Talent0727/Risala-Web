@@ -49,48 +49,11 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
     const [timer, setTimer] = useState(0)
     const [timeStamp, setTimeStamp] = useState('')
 
-    // Socket events for call
+    const [isJoined, setIsJoined] = useState(false)
+
+    // Keep this one
     useEffect(() => {
-        if(socket.connected){
-            socket.on('call-message', (data) => {
-                if(data.purpose === "microphone"){
-                    setIsPeerMuted(data.enabled)
-                } else if(data.purpose === "camera"){
-                    setIsPeerCam(data.enabled)
-                } else if(data.purpose === "screen-sharing"){
-                    if(data.isSharing){
-                        if(isPresenting){
-                            stopScreenShare()
-                        }
-                        setIsPeerPresenting(true)
-                        setIsPresenting(false)
-                        setIsFullScreen(false)
-                    } else {
-                        setIsPeerPresenting(false)
-                    }
-                }
-            })
-
-            // Initiated if the Peer ends the call
-            socket.on('call-exit', (data) => {
-                if(data.initiator === USER_DATA.account_id || data.callSettings.initiator === USER_DATA.account_id){
-                    if(data.joined.length === 1){
-                        callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, true)
-                    } else {
-                        callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, false)
-                    }
-                }
-                callTerminated()
-            })
-        }
-
-        return(() => {
-            socket.off('call-exit')
-            socket.off('call-message')
-        })
-    }, [socket.connected])
-
-    useEffect(() => {
+        console.log(callSettings.joined, callSettings.joined.length)
         if(timer === 30 && callSettings){
             if(callSettings.joined.length <= 1 && callSettings.initiator === USER_DATA.account_id){
                 callMessage(socket, callSettings, timeStamp, true)
@@ -101,6 +64,8 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                     callSettings: callSettings
                 })
                 setTimer(0)
+            } else {
+                setIsJoined(true)
             }
         }
     }, [timer, callSettings.joined])
@@ -144,8 +109,9 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
     useEffect(() => {
 
         if(callSettings.isActive){
-            if(callSettings.joined.length === 2){
+            if(callSettings.joined.length >= 2){
                 setPeerObject(callSettings.members.filter(e => e.id !== USER_DATA.account_id)[0])
+                setIsJoined(true)
             }
         } else {
             setPeerObject(false)
@@ -159,14 +125,9 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
             setUserPeer(undefined)
             setIsPeerPresenting(false)
             setIsPresenting(false)
+            setIsJoined(false)
         }
-
-        if(userPeer && callSettings.returnedSignalData){
-            if(userPeer.initiator){
-                userPeer.signal(callSettings.returnedSignalData)
-            }
-        }
-    }, [callSettings, userPeer])
+    }, [callSettings])
 
     useEffect(() => {
         if(isInCall && callSettings.isActive){
@@ -230,13 +191,9 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
 
                     var callObject = {
                         id: callSettings.id,
-                        isActive: true,
-                        joined: callSettings.joined,
-                        members: callSettings.members,
+                        joined: USER_DATA.account_id,
                         room: [...callSettings.joined].filter(e => e !== USER_DATA.account_id),
-                        initiator: callSettings.initiator,
-                        purpose: callSettings.purpose,
-                        returnedSignalData: signal
+                        signal: signal
                     }
 
                     socket.emit('call-join', callObject)
@@ -255,7 +212,6 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                     socket.emit('call-init', callObject)
                 }
             })
-
 
             // This is correct
             peer.on('stream', (stream) => {
@@ -283,95 +239,102 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                     var volumeMeter = document.querySelectorAll('.volume-meter')[1]
                 }
 
-                volumeMeterInit(stream, volumeMeter, callSettings.purpose)
+                if(volumeMeter){
+                    volumeMeterInit(stream, volumeMeter, callSettings.purpose)
+                } else {
+                    setTimeout(() => {
+                        volumeMeterInit(stream, volumeMeter, callSettings.purpose)
+                    }, 1000)
+                }
             })
-            
 
             // If the call was interrupted
             peer.on('close', (err) => {
-                console.log("close")
-                if(callSettings.initiator !== USER_DATA.account_id){
-                    callInterupt(err, timeStamp)
-                    peer = null;
-                }
+                console.log(err)
+                callInterupt(err, timeStamp)
+                peer = null;
             })
 
             peer.on('error', (err) => {
+                console.log(err)
                 peer = null;
                 callInterupt(err, timeStamp)
             })
-        })
-    }
 
-    function screenShare(){
-        navigator.mediaDevices.getDisplayMedia({ cursor: true })
-        .then((screenStream) => {
-            if(peer){
-                peer.replaceTrack(
-                    stream.getVideoTracks()[0],
-                    screenStream.getVideoTracks()[0],
-                    stream
-                );
-            }
-
-            setIsPresenting(true);
-            setScreenCastStream(screenStream)
-            userVideo.current.srcObject = screenStream
-
-            screenStream.getTracks()[0].onended = () => {
-                userVideo.current.srcObject = stream
-                setIsPresenting(false)
-                setIsFullScreen(false)
-                if(peer){
-                    peer.replaceTrack(stream.getVideoTracks()[0]);
+            /**************************************************************/
+            socket.on('call-message', (data) => {
+                if(data.purpose === "microphone"){
+                    setIsPeerMuted(data.enabled)
+                } else if(data.purpose === "camera"){
+                    setIsPeerCam(data.enabled)
+                } else if(data.purpose === "screen-sharing"){
+                    if(data.isSharing){
+                        if(isPresenting){
+                            stopScreenShare()
+                        }
+                        setIsPeerPresenting(true)
+                        setIsPresenting(false)
+                        setIsFullScreen(false)
+                    } else {
+                        setIsPeerPresenting(false)
+                    }
+                } else if(data.purpose === "error"){
+                    dispatch(chatReducer({
+                        ERROR: {
+                            PURPOSE: `An error has occurred by your peer: ${err}`
+                        }
+                    }))
+                    callTerminated()
+                } else if(data.purpose === "reject"){
+                    console.log("reject triggered")
+                    callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, true)
+                    callTerminated()
                 }
-                if(peerObject){
-                    socket.emit('call-message', {
-                        purpose: 'screen-sharing',
-                        isSharing: false,
-                        room: peerObject.id
-                    })
+            })
+
+            // Initiated if the Peer ends the call
+            socket.on('call-exit', (data) => {
+                if(data.initiator === USER_DATA.account_id || data.callSettings.initiator === USER_DATA.account_id){
+                    if(data.joined.length === 1){
+                        callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, true)
+                    } else {
+                        callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, false)
+                    }
                 }
-            };
+                callTerminated()
+            })
+
+            socket.on('call-join', (data) => {
+                peer.signal(data.signal)
+                dispatch(chatReducer({
+                    callSettings: {
+                        id: callSettings.id,
+                        isActive: true,
+                        joined: [...callSettings.joined, data.joined],
+                        members: callSettings.members,
+                        room: callSettings.joined,
+                        initiator: callSettings.initiator,
+                        purpose: callSettings.purpose
+                    }
+                }))
+            })
+
+            /*************************************************************/
         })
-
-        //Emit event
-        if(peerObject){
+        .catch((err) => {
+            dispatch(chatReducer({
+                ERROR: {
+                    PURPOSE: err.message
+                }
+            }))
             socket.emit('call-message', {
-                purpose: 'screen-sharing',
-                isSharing: true,
-                room: peerObject.id
+                purpose: 'error',
+                error: err.message,
+                room: callSettings.joined.filter(e => e.id !== USER_DATA.account_id)
             })
-        }
-    }
 
-    function stopScreenShare(){
-        screenCastStream.getVideoTracks().forEach(function (track) {
-            track.stop();
-        });
-
-        userVideo.current.srcObject = stream
-
-        setIsPresenting(false)
-        setIsFullScreen(false)
-        setScreenCastStream(undefined)
-
-        if(peer){
-            peer.replaceTrack(
-              screenCastStream.getVideoTracks()[0],
-              stream.getVideoTracks()[0],
-              stream
-            );
-        }
-
-        //Emit event
-        if(peerObject){
-            socket.emit('call-message', {
-                purpose: 'screen-sharing',
-                isSharing: false,
-                room: peerObject.id
-            })
-        }
+            callTerminated()
+        })
     }
 
     return(
@@ -494,7 +457,7 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                                 </div>
                             }
                             {
-                                !peerObject &&
+                                callSettings.joined.length === 1 &&
                                 <audio src="../assets/call_generic_sound.aac" autoPlay loop></audio>
                             }
                         </>
@@ -503,12 +466,8 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                     <CallNav 
                         callSettings={callSettings}
                         isPresenting={isPresenting}
-                        screenShare={screenShare}
-                        stopScreenShare={stopScreenShare}
-                        stopCamera={stopCamera}
                         isMuted={isMuted}
-                        muteMic={muteMic}
-                        hangUp={hangUp}
+                        setIsMuted={setIsMuted}
                         setIsFullScreen={setIsFullScreen}
                         isFullScreen={isFullScreen}
                         current={current}
@@ -519,99 +478,30 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                         timer={timer}
                         setTimer={setTimer}
                         isCam={isCam}
+                        socket={socket}
+                        stream={stream}
+                        peerObject={peerObject}
+                        screenCastStream={screenCastStream}
+                        peer={peer}
+                        setIsPresenting={setIsPresenting}
+                        setScreenCastStream={setScreenCastStream}
+                        setIsTimer={setIsTimer}
+                        setIsInCall={setIsInCall}
                     />
                 </div>
             }
-            <CallerWindow
-                socket={socket}
-                isInCall={isInCall}
-                setIsInCall={setIsInCall}
-                setStream={setStream}
-                setPeerStream={setPeerStream}
-            />
+            {
+                callSettings.isActive &&
+                <CallerWindow
+                    socket={socket}
+                    isInCall={isInCall}
+                    setIsInCall={setIsInCall}
+                    setStream={setStream}
+                    setPeerStream={setPeerStream}
+                />
+            }
         </>
     )
-
-    function muteMic(){
-        //You are at the moment muted, muted -> unmuted
-        if(isMuted){
-            stream.getTracks()[0].enabled = true
-        } else { //You go from unmuted to muted
-            stream.getTracks()[0].enabled = false
-        }
-
-        if(peerObject){
-            socket.emit('call-message', {
-                purpose: 'microphone',
-                enabled: !isMuted,
-                room: peerObject.id
-            })
-        }
-        setIsMuted(!isMuted)
-    }
-
-    function stopCamera(){
-        if(isPresenting){
-            screenCastStream.getVideoTracks().forEach(function (track) {
-                track.stop();
-            });
-        }
-
-        if(isCam){
-            stream.getTracks()[1].enabled = false
-        } else { //You go from unmuted to muted
-            stream.getTracks()[1].enabled = true
-        }
-        if(peerObject){
-            socket.emit('call-message', {
-                purpose: 'camera',
-                enabled: !isCam,
-                room: peerObject.id
-            })
-        }
-        setIsCam(!isCam)
-    }
-
-    // Initiated if YOU hang up
-    function hangUp(){
-        if(stream){
-            stream.getTracks().forEach(function(track) {
-                track.stop();
-            });
-        }
-
-        console.log(timeStamp)
-        socket.emit('call-exit', {
-            id: callSettings.id,
-            joined: callSettings.joined,
-            room: callSettings.joined.filter(e => e != USER_DATA.account_id),
-            callSettings: callSettings,
-            timeStamp: timeStamp,
-            initiator: callSettings.initiator
-        })
-
-        setIsMuted(false)
-        setIsInCall(false)
-        setIsPresenting(false)
-        setIsFullScreen(false)
-        setScreenCastStream(undefined)
-        peer = null;
-
-        if(callSettings.initiator === USER_DATA.account_id && peerObject){
-            callMessage(socket, callSettings, timeStamp)
-        }
-        
-
-        dispatch(chatReducer({
-            callSettings: {
-                id: undefined,
-                isActive: false,
-                members: [],
-                joined: []
-            }
-        }))
-        setIsTimer(false)
-    }
 
     function callTerminated(){
         console.log("Call terminated was triggered")

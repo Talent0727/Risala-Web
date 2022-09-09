@@ -96,12 +96,20 @@ export default function callMessage(socket, callSettings, callTime = null, isMis
         }
 
         // Emit to reciever(s)
+        // Add recentMessage to messageObject to reduce Backend strain
+        var recentMessage = newChat.recent_message
+        messageObject = { ...messageObject, recentMessage}
         socket.emit('message', messageObject)
     } else {
+        console.log(messageObject)
         store.dispatch(chatReducer({
             chat: [...chat, messageObject],
             chats: [newChat, ...chats.filter((e) => e.id !== messageObject.id)] 
         }))
+        
+        // Add recentMessage to messageObject to reduce Backend strain
+        var recentMessage = newChat.recent_message
+        messageObject = { ...messageObject, recentMessage}
         socket.emit('message', messageObject)
     }
 }

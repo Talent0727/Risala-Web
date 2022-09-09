@@ -47,20 +47,9 @@ function sendMessage(data){
             }
         })
     } else if(data.time_separator === 4){
-        var infoObject = JSON.parse(data.text)
-        var senderObject = data.members.find(e => e.id === data.sender_id)
-        var textPurpose = infoObject.purpose === "call" ? "Audio call" : "Video call"
-        textPurpose = infoObject.isMissed ? `Missed ${textPurpose.toLocaleLowerCase()}` : textPurpose
-        var recentMessageText = `${textPurpose} from ${senderObject.firstname}`;
 
-        var recentMessage = JSON.stringify({
-            text: recentMessageText,
-            files: files,
-            file_paths: file_paths,
-            sender_id: data.sender_id,
-            timestamp: data.timestamp
-        })
-    
+        var recentMessage = JSON.stringify(data.recentMessage)
+        
         let query = "update unique_chats set recent_message = ? where id = ?"
         mysql_database.query(query, [recentMessage, data.id], (err, result) => {
             if(err){
@@ -167,7 +156,7 @@ function sendMessage(data){
             ) VALUES ?`;
 
             var values = [
-                [data.message_id, data.id, data.sender_id, data.reciever_id, data.text, files, file_paths, getCurrentTime(true), data.time_separator],
+                [data.message_id, data.id, data.sender_id, data.reciever_id, data.text, files, file_paths, getCurrentTime(true), 4],
                 [data.message_id_time, data.id, null, null, null, null, null, getCurrentTime(), true]
             ]
             mysql_database.query(sql, [values], (err, result) => {
@@ -191,7 +180,7 @@ function sendMessage(data){
             ) VALUES ?`;
     
             var values = [
-                [data.message_id, data.id, data.sender_id, data.reciever_id, data.text, files, file_paths, data.timestamp, data.time_separator],
+                [data.message_id, data.id, data.sender_id, data.reciever_id, data.text, files, file_paths, data.timestamp, 4],
             ]
             mysql_database.query(sql, [values], (err, result) => {
                 if(!err) return result.insertId

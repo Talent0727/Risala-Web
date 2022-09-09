@@ -23,15 +23,9 @@ export default function CallerWindow({ socket, isInitiator, isInCall, setIsInCal
     }
 
     function rejectCall(){
-        socket.emit('call-exit', {
-            id: callSettings.id,
-            isActive: true,
-            joined: callSettings.joined,
-            members: callSettings.members,
-            room: callSettings.joined,
-            initiator: callSettings.initiator,
-            purpose: callSettings.purpose,
-            room: callSettings.joined.filter(e => e !== USER_DATA.account_id)
+        socket.emit('call-closed', {
+            user: USER_DATA.account_id,
+            room: callSettings.joined.filter(e => e.id !== USER_DATA.account_id)
         })
         dispatch(chatReducer({
             callSettings: {
@@ -46,7 +40,7 @@ export default function CallerWindow({ socket, isInitiator, isInCall, setIsInCal
     return(
         <>
             {
-                (callSettings.initiator !== USER_DATA.account_id && isInCall === false && callSettings.members.length > 0) &&
+                (callSettings.initiator !== USER_DATA.account_id && !callSettings.joined.find(e => e.id === USER_DATA.account_id) && callSettings.isActive) &&
                 <div className="caller-window">
                     <figure>
                         {

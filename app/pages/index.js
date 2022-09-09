@@ -23,7 +23,7 @@ import { postRequest, errorManagement } from "../api/api";
 
 
 import { socketTyping, socketRemove, socketMessage, socketExit, socketJoin, socketConnect } from "../api/socketRoutes";
-import { callInit, callJoin } from "../api/callSocketRoutes";
+import { callInit, callClosed } from "../api/callSocketRoutes";
 
 export default function Index(){
     const socket = useContext(SocketContext)
@@ -46,16 +46,7 @@ export default function Index(){
     const inputRef = useRef();
 
     const [width, setWidth] = useState()
-    const [isMore, setIsMore] = useState(false)
     const [access, setAccess] = useState(false)
-    const [chats, setChats] = useState([]) //One object per conversation for ChatSideMenu
-    const [counter, setCounter] = useState() //the id of the other person
-
-    //Video call or audio call settings
-    const [isIncoming, setIsIncoming] = useState(null);
-    const [isOutgoing, setIsOutgoing] = useState(null);
-    const [stream, setStream] = useState();
-    const [peerStream, setPeerStream] = useState();
 
     useEffect(() => {
         if(USER_DATA){
@@ -72,8 +63,8 @@ export default function Index(){
             socket.on('group-join', socketJoin)
 
             //Call routes
-            socket.on('call-init', callInit)
-            socket.on('call-join', callJoin)
+            socket.on('call-init', (data) => { callInit(data, socket) })
+            socket.on('call-closed', callClosed)
         }
 
         return(() => {

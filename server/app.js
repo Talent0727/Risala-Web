@@ -113,15 +113,14 @@ io.on('connection', (socket) => {
     /*                        CALLS                        */
     /*******************************************************/
     socket.on('call-init', (data) => {
-        if(data.purpose === 'call'){
-            socket.broadcast.to(data.room).emit('call-init', data)
-        } else {
-            socket.broadcast.to(data.room).emit('call-init', data)
-        }
+        socket.to(data.room).emit('call-init', data)
     })
 
     socket.on('call-rejected', (data) => {
         socket.to(data.room).emit('call-rejected', data)
+    })
+    socket.on('call-closed', (data) => {
+        socket.to(data.room).emit('call-closed', data)
     })
 
     socket.on('call-join', (data) => {
