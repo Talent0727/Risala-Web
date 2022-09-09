@@ -31,8 +31,6 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
 
     // These are call settings for YOU
     const [isPresenting, setIsPresenting] = useState(false) //
-    const [isAudio, setIsAudio] = useState(false)
-    const [isVideo, setIsVideo] = useState(false) //Redundant?
     const [isMuted, setIsMuted] = useState(false)
     const [isCam, setIsCam] = useState(false)
     const [isFullScreen, setIsFullScreen] = useState(false)
@@ -70,6 +68,7 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
         }
     }, [timer, callSettings.joined])
 
+    // I want to get rid of this useEffect
     useEffect(() => {
         if(callSettings){
             // Call is active & you initated the call
@@ -116,7 +115,6 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
         } else {
             setPeerObject(false)
             setIsMuted(false)
-            setIsAudio(false)
             setIsCam(false)
             setIsPeerCam(false)
             setIsPeerMuted(false)
@@ -140,12 +138,6 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
     function initWebRTC(){
         setTimeStamp('00:00:00')
         setIsTimer(true)
-
-        if(callSettings.purpose === "video"){
-            setIsVideo(true)
-        } else {
-            setIsAudio(true)
-        }
 
         navigator.mediaDevices.getUserMedia({ 
             video: callSettings.purpose === "video" ? true : false,

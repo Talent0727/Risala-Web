@@ -193,15 +193,20 @@ export default function ChatSettings({ locale, current, USER_DATA }){
                                 </>
                                 :
                                 <>
-                                    <figure>
-                                        <img src={(current.members && current.members.length > 0) ? COUNTER_DATA[0].profile_picture ? `https://risala.codenoury.se${COUNTER_DATA[0].profile_picture.substring(2)}` : "https://codenoury.se/assets/generic-profile-picture.png" : "https://codenoury.se/assets/generic-profile-picture.png"}/>
-                                    </figure>
-                                    {
-                                        nickname ?
-                                        <span>{nickname}</span>
-                                        :
-                                        <span>{ (current.members && current.members.length > 0) ? COUNTER_DATA[0].firstname + ' ' + COUNTER_DATA[0].lastname : "Participant"}</span>
-                                    }
+                                {
+                                    COUNTER_DATA &&
+                                    <>
+                                        <figure>
+                                            <img src={(current.members && current.members.length > 0) ? COUNTER_DATA[0].profile_picture ? `https://risala.codenoury.se${COUNTER_DATA[0].profile_picture.substring(2)}` : "https://codenoury.se/assets/generic-profile-picture.png" : "https://codenoury.se/assets/generic-profile-picture.png"}/>
+                                        </figure>
+                                        {
+                                            nickname ?
+                                            <span>{nickname}</span>
+                                            :
+                                            <span>{ (current.members && current.members.length > 0) ? COUNTER_DATA[0].firstname + ' ' + COUNTER_DATA[0].lastname : "Participant"}</span>
+                                        }
+                                    </>
+                                }
                                 </>
                             }
                         </div>

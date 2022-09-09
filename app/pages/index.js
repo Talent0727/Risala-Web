@@ -3,6 +3,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { chatReducer, objectAdd } from "../features/chat";
+import { callSettingReducer } from "../features/callSettings";
 import useLocale from "../hooks/useLocale";
 
 //Components
@@ -34,6 +35,7 @@ export default function Index(){
     const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
     const isMobile = useSelector((state) => state.chatReducer.value.isMobile)
     const chat = useSelector((state) => state.chatReducer.value.chat)
+    const callSettings = useSelector((state) => state.callSettingReducer)
 
     //ERROR, either false or an object. If object, it holds value in ERROR.PURPOSE.
     //This is displayed in the error window that appear on top
@@ -49,6 +51,7 @@ export default function Index(){
     const [access, setAccess] = useState(false)
 
     useEffect(() => {
+        console.log(callSettings)
         if(USER_DATA){
             socket.connect()
 
