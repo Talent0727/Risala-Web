@@ -9,75 +9,6 @@
     height: 100vh;
     background-color: $black;
 
-    .call-window-top{
-        position: absolute;
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        top: 0;
-        z-index: 10;
-        padding: 10px 20px;
-        width: calc(100% - 40px);
-        background-color: $black;
-        .message-top{
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            .group-figure{
-                width: 45px;
-                height: 45px;
-                overflow: hidden;
-                margin-bottom: 6px;
-                margin: 0 0 0 10px;
-                position: relative;
-                figure{
-                    width: 30px;
-                    height: 30px;
-                    border-radius: 50%;
-                    margin: 0;
-                    overflow: hidden;
-                    position: absolute;
-                    img{
-                        object-fit: cover;
-                        width: 100%;
-                        height: 100%;
-                    }
-                    &:nth-child(1){
-                        top: 0;
-                        right: 0;
-                    }
-                    &:nth-last-child(1){
-                        bottom: 0;
-                        left: 0;
-                        border: 2px solid $black-1;
-                    }
-                }
-            }
-            figure{
-                height: 40px;
-                width: 40px;
-                overflow: hidden;
-                margin: 0 0 0 10px;
-                border-radius: 50%;
-                img{
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                }
-            }
-            span{
-                margin-left: 14px;
-                font-weight: bold;
-                font-size: 18px;
-            }
-        }
-        .timer{
-            display: flex;
-            align-items: center;
-            font-weight: 600;
-            font-size: 20px;
-        }
-    }
     .call-window-main{
         .video{
             .full-screen{
@@ -268,9 +199,63 @@
     .call-window-nav{
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: space-around;
         position: absolute;
+        width: calc(100% - 20px);
         bottom: 10px;
+        padding: 0 10px;
+        .info-wrapper{
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            .group-figure{
+                width: 45px;
+                height: 45px;
+                overflow: hidden;
+                margin-bottom: 6px;
+                margin: 0 0 0 10px;
+                position: relative;
+                figure{
+                    width: 30px;
+                    height: 30px;
+                    border-radius: 50%;
+                    margin: 0;
+                    overflow: hidden;
+                    position: absolute;
+                    img{
+                        object-fit: cover;
+                        width: 100%;
+                        height: 100%;
+                    }
+                    &:nth-child(1){
+                        top: 0;
+                        right: 0;
+                    }
+                    &:nth-last-child(1){
+                        bottom: 0;
+                        left: 0;
+                        border: 2px solid $black-1;
+                    }
+                }
+            }
+            figure{
+                height: 40px;
+                width: 40px;
+                overflow: hidden;
+                margin: 0 0 0 10px;
+                border-radius: 50%;
+                img{
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+            }
+            span{
+                margin-left: 14px;
+                font-weight: bold;
+                font-size: 18px;
+            }
+        }
         .call-main-buttons{
             i{
                 background-color: $black-3;
@@ -286,6 +271,10 @@
                     background-color: $red;
                 }
             }
+        }
+        .timer{
+            font-size: 20px;
+            font-weight: 600;
         }
     }
 }

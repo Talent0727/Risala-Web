@@ -24,8 +24,7 @@ export default function CallEvent({ value, index, locale, array, USER_DATA, curr
                     newTime = `${newTime} sec`
                 }
             } else {
-                var newTime = newTime.substring(0, 1)
-                if(newTime.substring(0) === "0"){
+                if(newTime.substring(0, 1) === "0"){
                     newTime = `${newTime.substring(1,2)} min`
                 } else {
                     newTime = `${newTime} min`

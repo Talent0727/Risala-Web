@@ -8,6 +8,7 @@ import { SocketContext } from "../../components/Socket";
 import CallTop          from "./CallTop";
 import CallerWindow     from "./CallerWindow";
 import callMessage       from "../ChatBottom/functions/callMessage"
+import CallNav from "./CallNav";
 
 let peer;
 
@@ -261,6 +262,8 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
 
             // This is correct
             peer.on('stream', (stream) => {
+                setIsMuted(false)
+                callSettings.purpose === "video" ? setIsCam(true) : null
                 setTimer(0)
                 setPeerStream(stream)
                 if(callSettings.purpose === "video"){
@@ -379,13 +382,6 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
             {
                 isInCall === true && callSettings.isActive &&
                 <div className="call-window">
-                    <CallTop 
-                        isTimer={isTimer}
-                        timeStamp={timeStamp}
-                        setTimeStamp={setTimeStamp}
-                        timer={timer}
-                        setTimer={setTimer}
-                    />
                     <div className="call-window-main">
                     {
                         callSettings.joined.length <= 2 &&
@@ -507,50 +503,26 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                         </>
                     }
                     </div>
-                    <div className="call-window-nav">
-                        <div className="call-main-buttons">
-                            {
-                                callSettings.purpose === "video" &&
-                                <>
-                                    <i 
-                                        className="material-icons" 
-                                        onClick={(() => { setIsFullScreen(!isFullScreen) })}
-                                    >
-                                        {isFullScreen ? "fullscreen" : "fullscreen_exit"}
-                                    </i>
-                                    <i
-                                        className="material-icons"
-                                        onClick={!isPresenting ? screenShare : stopScreenShare}
-                                    >
-                                        {
-                                            !isPresenting ? "screen_share" : "stop_screen_share"
-                                        }
-                                    </i>
-                                    <i 
-                                        className="material-icons" 
-                                        onClick={stopCamera}
-                                    >
-                                        { isCam ? "videocam" : "videocam_off" }
-                                    </i>
-                                </>
-
-                            }
-                            <i 
-                                className="material-icons" 
-                                onClick={muteMic}
-                                title={isMuted ? "Unmute" : "Mute"}
-                            >
-                                { isMuted ? "mic" : "mic_off" }
-                            </i>
-                            <i 
-                                className="material-icons call-end"
-                                title="Hang up" 
-                                onClick={hangUp}
-                            >
-                                call_end
-                            </i>
-                        </div>
-                    </div>
+                    <CallNav 
+                        callSettings={callSettings}
+                        isPresenting={isPresenting}
+                        screenShare={screenShare}
+                        stopScreenShare={stopScreenShare}
+                        stopCamera={stopCamera}
+                        isMuted={isMuted}
+                        muteMic={muteMic}
+                        hangUp={hangUp}
+                        setIsFullScreen={setIsFullScreen}
+                        isFullScreen={isFullScreen}
+                        current={current}
+                        USER_DATA={USER_DATA}
+                        isTimer={isTimer}
+                        timeStamp={timeStamp}
+                        setTimeStamp={setTimeStamp}
+                        timer={timer}
+                        setTimer={setTimer}
+                        isCam={isCam}
+                    />
                 </div>
             }
             <CallerWindow
