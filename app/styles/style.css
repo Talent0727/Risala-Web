@@ -7599,7 +7599,7 @@ a:active {
   overflow: hidden;
 }
 .call-window .call-window-main .video .full-screen .video-wrapper .volume-meter {
-  top: 70px;
+  top: 20px;
 }
 .call-window .call-window-main .video .full-screen video {
   width: 100%;
