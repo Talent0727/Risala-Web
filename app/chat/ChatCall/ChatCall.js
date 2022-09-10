@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatReducer } from "../../features/chat";
+import { callSettingReducer, callSettingsReset } from "../../features/callSettings";
 import Peer from "simple-peer";
 import volumeMeterInit from "./functions/volumeMeterInit";
 import { SocketContext } from "../../components/Socket";
@@ -15,7 +16,8 @@ let peer;
 export default function ChatCall({ locale, current, USER_DATA, inputRef }){
     const dispatch = useDispatch();
     const socket = useContext(SocketContext)
-    const callSettings = useSelector((state) => state.chatReducer.value.callSettings)
+    const callSettings = useSelector((state) => state.callSettingReducer)
+    //const callSettings = useSelector((state) => state.chatReducer.value.callSettings)
 
     const userVideo = useRef(null);
     const userAudio = useRef(null);
@@ -47,13 +49,10 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
     const [timer, setTimer] = useState(0)
     const [timeStamp, setTimeStamp] = useState('')
 
-    const [isJoined, setIsJoined] = useState(false)
-
     // Keep this one
     useEffect(() => {
-        console.log(callSettings.joined, callSettings.joined.length)
-        if(timer === 30 && callSettings){
-            if(callSettings.joined.length <= 1 && callSettings.initiator === USER_DATA.account_id){
+        if(timer === 30){
+            if(callSettings.joined.length === 1 && callSettings.initiator){
                 callMessage(socket, callSettings, timeStamp, true)
                 callTerminated()
                 socket.emit('call-exit', {
@@ -62,46 +61,37 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                     callSettings: callSettings
                 })
                 setTimer(0)
-            } else {
-                setIsJoined(true)
             }
         }
     }, [timer, callSettings.joined])
 
     // I want to get rid of this useEffect
     useEffect(() => {
-        if(callSettings){
-            // Call is active & you initated the call
-            if(callSettings.isActive && callSettings.initiator){
-                if(callSettings.initiator === USER_DATA.account_id && !isInCall){
-                    setIsInCall(true)
-                } else if(callSettings.joined.find(e => e === USER_DATA.account_id)) {
-                    setIsInCall(true)
-                }
-
-                if(callSettings.joined.length === 2){
-                    var peerObjectCopy = callSettings.members.filter(e => e.id !== USER_DATA.account_id)[0]
-                    setPeerObject(peerObjectCopy)
-                } else if(callSettings.joined.length === 1){
-                    setPeerObject(undefined)
-                }
-    
-                if(callSettings.isInit && !isActive){
-                    if(callSettings.purpose === "call" && !isCam){
-                        setIsActive(true)
-                        setIsMuted(false)
-                    } else {
-                        setIsCam(false)
-                    }
-                }
-                
-            } else { // You did NOT initate the call
-                setIsInCall(false)
+        if(callSettings.isActive && callSettings.initiator){
+            if(callSettings.initiator && !isInCall){
+                setIsInCall(true)
+            } else if(callSettings.joined.find(e => e === USER_DATA.account_id)) {
+                setIsInCall(true)
             }
 
-        } else {
+            if(callSettings.joined.length === 2){
+                var peerObjectCopy = callSettings.members.filter(e => e.id !== USER_DATA.account_id)[0]
+                setPeerObject(peerObjectCopy)
+            } else if(callSettings.joined.length === 1){
+                setPeerObject(undefined)
+            }
+
+            if(callSettings.isInit && !isActive){
+                if(callSettings.purpose === "call" && !callSettings.userSettings.isCam){
+                    setIsActive(true)
+                    setIsMuted(false)
+                } else {
+                    setIsCam(false)
+                }
+            }
+            
+        } else { // You did NOT initate the call
             setIsInCall(false)
-            setIsActive(false)
         }
     }, [callSettings])
 
@@ -110,20 +100,9 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
         if(callSettings.isActive){
             if(callSettings.joined.length >= 2){
                 setPeerObject(callSettings.members.filter(e => e.id !== USER_DATA.account_id)[0])
-                setIsJoined(true)
             }
         } else {
-            setPeerObject(false)
-            setIsMuted(false)
-            setIsCam(false)
-            setIsPeerCam(false)
-            setIsPeerMuted(false)
-            setIsPeerCam(false)
-            setPeerObject(undefined)
-            setUserPeer(undefined)
-            setIsPeerPresenting(false)
-            setIsPresenting(false)
-            setIsJoined(false)
+            dispatch(callSettingsReset())
         }
     }, [callSettings])
 
@@ -144,10 +123,21 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
             audio: true
         })
         .then((stream) => {
+            dispatch(callSettingReducer({
+                userSettings: {
+                    ...callSettings.userSettings,
+                    ['stream']: stream
+                }
+            }))
             setStream(stream)
 
             if(callSettings.purpose === "video"){
-                setIsCam(true)
+                dispatch(callSettingReducer({
+                    userSettings: {
+                        ...callSettings.userSettings,
+                        ['isCam']: true
+                    }
+                }))
                 if(userVideo.current){
                     userVideo.current.srcObject = stream
                 } else {
@@ -173,13 +163,13 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
 
             // If you are not the initiator, then send a signal back to the one who sent the signal to
             // begin with in order to "answer" the signal
-            if(!peer.initiator || callSettings.initiator !== USER_DATA.account_id){
+            if(!peer.initiator || !callSettings.initiator){
                 peer.signal(callSettings.signalData)
             }
 
             peer.on('signal', (signal) => {
                 // The reciever
-                if(!peer.initiator || callSettings.initiator !== USER_DATA.account_id){
+                if(!peer.initiator || !callSettings.initiator){
 
                     var callObject = {
                         id: callSettings.id,
@@ -207,15 +197,38 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
 
             // This is correct
             peer.on('stream', (stream) => {
-                setIsMuted(false)
-                callSettings.purpose === "video" ? setIsCam(true) : null
+                dispatch(callSettingReducer({
+                    userSettings: {
+                        ...callSettings.userSettings,
+                        ['isMuted']: false
+                    },
+                    peerSettings: {
+                        ...callSettingReducer.peerSettings,
+                        ['peerStream']: stream
+                    }
+                }))
+
+                if(callSettings.purpose === "video"){
+                    dispatch(callSettingReducer({
+                        userSettings: {
+                            ...callSettings.userSettings,
+                            ['isCam']: true
+                        }
+                    }))
+                }
+
                 setTimer(0)
-                setPeerStream(stream)
+
                 if(callSettings.purpose === "video"){
                     if(peerVideo.current){
                         peerVideo.current.srcObject = stream
                     }
-                    setIsPeerCam(true)
+                    dispatch(callSettingReducer({
+                        peerSettings: {
+                            ...callSettingReducer.peerSettings,
+                            ['isPeerCam']: true
+                        }
+                    }))
                 } else {
                     var peerAudioManual = document.querySelector('.peer-audio')
                     if(peerAudio.current){
@@ -256,19 +269,44 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
             /**************************************************************/
             socket.on('call-message', (data) => {
                 if(data.purpose === "microphone"){
-                    setIsPeerMuted(data.enabled)
+                    dispatch(callSettingReducer({
+                        peerSettings: {
+                            ...callSettingReducer.peerSettings,
+                            ['isPeerMuted']: data.enabled
+                        }
+                    }))
                 } else if(data.purpose === "camera"){
-                    setIsPeerCam(data.enabled)
+                    dispatch(callSettingReducer({
+                        peerSettings: {
+                            ...callSettingReducer.peerSettings,
+                            ['isPeerCam']: data.enabled
+                        }
+                    }))
                 } else if(data.purpose === "screen-sharing"){
                     if(data.isSharing){
-                        if(isPresenting){
+                        
+                        if(callSettings.userSettings.isPresenting){
                             stopScreenShare()
                         }
-                        setIsPeerPresenting(true)
-                        setIsPresenting(false)
-                        setIsFullScreen(false)
+                        dispatch(callSettingReducer({
+                            userSettings: {
+                                ...callSettingReducer.userSettings,
+                                ['isFullScreen']: false,
+                                ['isPresenting']: false
+                            },
+                            peerSettings: {
+                                ...callSettingReducer.peerSettings,
+                                ['isPeerPresenting']: true
+                            }
+                        }))
+
                     } else {
-                        setIsPeerPresenting(false)
+                        dispatch(callSettingReducer({
+                            peerSettings: {
+                                ...callSettingReducer.peerSettings,
+                                ['isPeerPresenting']: false
+                            }
+                        }))
                     }
                 } else if(data.purpose === "error"){
                     dispatch(chatReducer({
@@ -308,6 +346,11 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                         initiator: callSettings.initiator,
                         purpose: callSettings.purpose
                     }
+                }))
+
+                dispatch(callSettingReducer({
+                    isActive: true,
+                    joined: [...callSettings.joined, data.joined]
                 }))
             })
 
@@ -381,21 +424,21 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                             {
                                callSettings.purpose === "video" &&
                                 <div className="single-call video">
-                                    <div className={ ((!isFullScreen || isPeerPresenting) && !isPresenting) ? "peer-screen full-screen" : "peer-screen small-screen" }>
+                                    <div className={ ((!callSettings.userSettings.isFullScreen || callSettings.peerSettings.isPeerPresenting) && !callSettings.userSettings.isPresenting) ? "peer-screen full-screen" : "peer-screen small-screen" }>
                                         {
-                                            (!isPeerCam && peerObject) &&
+                                            (!callSettings.peerSettings.isPeerCam && peerObject) &&
                                             <figure>
                                                 <img src={ peerObject.profile_picture ? peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
                                             </figure>
                                         }
                                         <div className="video-wrapper">
-                                            <div className={!isPeerMuted ? "volume-meter" : "volume-meter muted"}>
+                                            <div className={!callSettings.peerSettings.isPeerMuted ? "volume-meter" : "volume-meter muted"}>
                                                 {
-                                                    isPeerMuted &&
+                                                    callSettings.peerSettings.isPeerMuted &&
                                                     <i className="material-icons">mic_off</i>
                                                 }
                                                 {
-                                                    !isPeerMuted &&
+                                                    !callSettings.peerSettings.isPeerMuted &&
                                                     <>
                                                         <div className="volume-mark-1"></div>
                                                         <div className="volume-mark-2"></div>
@@ -404,7 +447,7 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                                                 }
                                             </div>
                                             <video
-                                                className={isPeerPresenting ? "peer-video presenting" : "peer-video" }
+                                                className={callSettings.peerSettings.isPeerPresenting ? "peer-video presenting" : "peer-video" }
                                                 autoPlay
                                                 playsInline
                                                 ref={peerVideo}
@@ -421,13 +464,13 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                                         }
                                         {
                                             <div className="video-wrapper">
-                                                <div className={!isMuted ? "volume-meter" : "volume-meter muted"}>
+                                                <div className={!callSettings.userSettings.isMuted ? "volume-meter" : "volume-meter muted"}>
                                                     {
-                                                        isMuted &&
+                                                        callSettings.userSettings.isMuted &&
                                                         <i className="material-icons">mic_off</i>
                                                     }
                                                     {
-                                                        !isMuted &&
+                                                        !callSettings.userSettings.isMuted &&
                                                         <>
                                                             <div className="volume-mark-1"></div>
                                                             <div className="volume-mark-2"></div>
@@ -436,7 +479,7 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                                                     }
                                                 </div>
                                                 <video
-                                                    className={isPresenting ? "user-video presenting" : "user-video" }
+                                                    className={callSettings.userSettings.isPresenting ? "user-video presenting" : "user-video" }
                                                     autoPlay
                                                     playsInline
                                                     muted  
@@ -497,25 +540,13 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
 
     function callTerminated(){
         console.log("Call terminated was triggered")
-        
-        setIsActive(false)
-        setIsInCall(false)
-        setIsPresenting(false)
-        setIsPeerPresenting(false)
-        if(stream){
-            stream.getTracks().forEach(function(track) {
+        if(callSettings.userSettings.stream){
+            callSettings.userSettings.stream.getTracks().forEach(function(track) {
                 track.stop();
             });
         }
         peer = null;
-        dispatch(chatReducer({
-            callSettings: {
-                id: undefined,
-                isActive: false,
-                members: [],
-                joined: []
-            }
-        }))
+        dispatch(callSettingsReset())
     }
 
     function callInterupt(err, timer){
@@ -527,33 +558,14 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                 track.stop();
             });
         }
-        setIsMuted(false)
-        setIsInCall(false)
-        setIsPresenting(false)
-        setIsFullScreen(false)
-        setScreenCastStream(undefined)
-        setIsTimer(false)
         peer = null;
+
+        dispatch(callSettingsReset())
 
         if(err){
             dispatch(chatReducer({
-                callSettings: {
-                    id: undefined,
-                    isActive: false,
-                    members: [],
-                    joined: []
-                },
                 ERROR: {
-                    PURPOSE: err
-                }
-            }))
-        } else {
-            dispatch(chatReducer({
-                callSettings: {
-                    id: undefined,
-                    isActive: false,
-                    members: [],
-                    joined: []
+                    PURPOSE: err.message ? err.message : err
                 }
             }))
         }

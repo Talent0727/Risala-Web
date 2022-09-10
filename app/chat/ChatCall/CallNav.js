@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatReducer } from "../../features/chat";
+import { callSettingReducer, callSettingsReset } from "../../features/callSettings";
 import callMessage from "../ChatBottom/functions/callMessage";
 
 export default function CallNav({ isPresenting, screenShare, stopScreenShare, isMuted, setIsMuted, setIsFullScreen, isFullScreen, isTimer, timeStamp, setTimeStamp, timer, setTimer, isCam, socket, stream, peerObject, screenCastStream, peer, setIsPresenting, setScreenCastStream, setIsTimer, setIsInCall }){
     const dispatch = useDispatch();
-    const callSettings = useSelector((state) => state.chatReducer.value.callSettings)
+    const callSettings = useSelector((state) => state.callSettingReducer)
     const current = useSelector((state) => state.chatReducer.value.current)
     const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
 
@@ -16,10 +17,10 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
 
     function muteMic(){
         //You are at the moment muted, muted -> unmuted
-        if(isMuted){
-            stream.getTracks()[0].enabled = true
+        if(callSettings.userSettings.isMuted){
+            callSettings.userSettings.stream.getTracks()[0].enabled = true
         } else { //You go from unmuted to muted
-            stream.getTracks()[0].enabled = false
+            callSettings.userSettings.stream.getTracks()[0].enabled = false
         }
 
         if(peerObject){
@@ -29,20 +30,26 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
                 room: peerObject.id
             })
         }
-        setIsMuted(!isMuted)
+        dispatch(callSettingReducer({
+            userSettings:{
+                ...callSettings.userSettings,
+                ['isMuted']: !callSettingReducer.userSettings.isMuted
+            }
+        }))
+        setIsMuted(!callSettings.userSettings.isMuted)
     }
 
     function stopCamera(){
-        if(isPresenting){
+        if(callSettings.userSettings.isPresenting){
             screenCastStream.getVideoTracks().forEach(function (track) {
                 track.stop();
             });
         }
 
-        if(isCam){
-            stream.getTracks()[1].enabled = false
+        if(callSettings.userSettings.isCam){
+            callSettings.userSettings.stream.getTracks()[1].enabled = false
         } else { //You go from unmuted to muted
-            stream.getTracks()[1].enabled = true
+            callSettings.userSettings.stream.getTracks()[1].enabled = true
         }
         if(peerObject){
             socket.emit('call-message', {
@@ -51,6 +58,12 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
                 room: peerObject.id
             })
         }
+        dispatch(callSettingReducer({
+            userSettings:{
+                ...callSettings.userSettings,
+                ['isCam']: !callSettingReducer.userSettings.isCam
+            }
+        }))
         setIsCam(!isCam)
     }
 
@@ -59,7 +72,7 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
             track.stop();
         });
 
-        userVideo.current.srcObject = stream
+        userVideo.current.srcObject = callSettings.userSettings.stream
 
         setIsPresenting(false)
         setIsFullScreen(false)
@@ -68,8 +81,8 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
         if(peer){
             peer.replaceTrack(
               screenCastStream.getVideoTracks()[0],
-              stream.getVideoTracks()[0],
-              stream
+              callSettings.userSettings.stream.getVideoTracks()[0],
+              callSettings.userSettings.stream
             );
         }
 
@@ -85,8 +98,8 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
 
     // Initiated if YOU hang up
     function hangUp(){
-        if(stream){
-            stream.getTracks().forEach(function(track) {
+        if(callSettings.userSettings.stream){
+            callSettings.userSettings.stream.getTracks().forEach(function(track) {
                 track.stop();
             });
         }
@@ -100,21 +113,15 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
                 timeStamp: timeStamp,
                 initiator: callSettings.initiator
             })
-        } else if(callSettings.initiator !== USER_DATA.account_id) {
+        } else if(!callSettings.initiator) {
             socket.emit('call-closed', {
                 room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id)
             })
         }
 
-
-        setIsMuted(false)
-        setIsInCall(false)
-        setIsPresenting(false)
-        setIsFullScreen(false)
-        setScreenCastStream(undefined)
         peer = null;
 
-        if(callSettings.initiator === USER_DATA.account_id && peerObject){
+        if(callSettings.initiator && peerObject){
             callMessage(socket, callSettings, timeStamp)
         }
 
@@ -126,6 +133,7 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
                 joined: []
             }
         }))
+        dispatch(callSettingsReset())
         setIsTimer(false)
     }
 

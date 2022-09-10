@@ -51,7 +51,6 @@ export default function Index(){
     const [access, setAccess] = useState(false)
 
     useEffect(() => {
-        console.log(callSettings)
         if(USER_DATA){
             socket.connect()
 

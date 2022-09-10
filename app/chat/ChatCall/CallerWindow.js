@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatReducer } from "../../features/chat";
+import { callSettingReducer } from "../../features/callSettings";
 
 export default function CallerWindow({ socket, isInitiator, isInCall, setIsInCall, callMessage }){
     const dispatch = useDispatch();
@@ -20,6 +21,9 @@ export default function CallerWindow({ socket, isInitiator, isInCall, setIsInCal
         }
         
         dispatch(chatReducer({callSettings: callObject}))
+        dispatch(callSettingReducer({
+            joined: [...callSettings.joined, USER_DATA.account_id]
+        }))
     }
 
     function rejectCall(){

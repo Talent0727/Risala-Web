@@ -1,5 +1,6 @@
 import store from "../features/store";
 import { chatReducer } from "../features/chat";
+import { callSettingReducer, callSettingsReset } from "../features/callSettings";
 import { postRequest } from "./api";
 
 const state         =   store.getState().chatReducer.value
@@ -21,6 +22,15 @@ function callInit(data, socket){
                     signalData: data.signalData ? data.signalData : null
                 }
             }))
+            store.dispatch(callSettingReducer({
+                isActive: true,
+                members: data.members,
+                joined: data.joined,
+                id: data.id,
+                initiator: data.initiator,
+                purpose: data.purpose,
+                signalData: data.signalData ? data.signalData : null
+            }))
         } else {
             // You are already busy in a call, so perhaps this could be tweaked better
             socket.emit('call-closed', {
@@ -41,6 +51,7 @@ function callClosed(data){
                 joined: []
             }
         }))
+        store.dispatch(callSettingsReset())
     } else {
         // This is for potential group calls
     }

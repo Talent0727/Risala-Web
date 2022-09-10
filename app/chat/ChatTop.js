@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatReducer, user_search_remove } from "../features/chat";
+import { callSettingReducer } from "../features/callSettings";
 import { postRequest, errorManagement } from "../api/api";
 
 export default function  ChatTop({setWidth, socket}){
@@ -457,7 +458,16 @@ export default function  ChatTop({setWidth, socket}){
             initiator: USER_DATA.account_id,
             isInit: true
         }
-
         dispatch(chatReducer({ callSettings: callVideoObject }))
+
+        dispatch(callSettingReducer({
+            isActive: true,
+            isInCall: true,
+            purpose: type,
+            id: current.id,
+            members: [...current.members],
+            joined: [USER_DATA.account_id],
+            initiator: true
+        }))
     }
 }
