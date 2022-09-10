@@ -4,9 +4,10 @@ import { chatReducer } from "../../features/chat";
 import { callSettingReducer, callSettingsReset } from "../../features/callSettings";
 import callMessage from "../ChatBottom/functions/callMessage";
 
-export default function CallNav({ isPresenting, screenShare, stopScreenShare, isMuted, setIsMuted, setIsFullScreen, isFullScreen, isTimer, timeStamp, setTimeStamp, timer, setTimer, isCam, socket, stream, peerObject, screenCastStream, peer, setIsPresenting, setScreenCastStream, setIsTimer, setIsInCall }){
+export default function CallNav({ screenShare, stopScreenShare, isTimer, timeStamp, setTimeStamp, timer, setTimer, socket, stream, peerObject, screenCastStream, peer, setScreenCastStream, setIsTimer, userVideo }){
     const dispatch = useDispatch();
     const callSettings = useSelector((state) => state.callSettingReducer)
+    const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
     const current = useSelector((state) => state.chatReducer.value.current)
     const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
 
@@ -17,54 +18,51 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
 
     function muteMic(){
         //You are at the moment muted, muted -> unmuted
-        if(callSettings.userSettings.isMuted){
-            callSettings.userSettings.stream.getTracks()[0].enabled = true
+        if(userSettings.isMuted){
+            stream.getTracks()[0].enabled = true
         } else { //You go from unmuted to muted
-            callSettings.userSettings.stream.getTracks()[0].enabled = false
+            stream.getTracks()[0].enabled = false
         }
 
-        if(peerObject){
-            socket.emit('call-message', {
-                purpose: 'microphone',
-                enabled: !isMuted,
-                room: peerObject.id
-            })
-        }
-        dispatch(callSettingReducer({
-            userSettings:{
-                ...callSettings.userSettings,
-                ['isMuted']: !callSettingReducer.userSettings.isMuted
+        try{
+            if(peerObject){
+                socket.emit('call-message', {
+                    purpose: 'microphone',
+                    enabled: !userSettings.isMuted,
+                    room: peerObject.id
+                })
             }
-        }))
-        setIsMuted(!callSettings.userSettings.isMuted)
+            dispatch(callSettingReducer({
+                userSettings:{ 
+                    isMuted : !userSettings.isMuted
+                }}
+            ))
+        } catch (err){
+            console.log(err)
+        }
     }
 
     function stopCamera(){
-        if(callSettings.userSettings.isPresenting){
+        if(userSettings.isPresenting){
             screenCastStream.getVideoTracks().forEach(function (track) {
                 track.stop();
             });
         }
 
-        if(callSettings.userSettings.isCam){
-            callSettings.userSettings.stream.getTracks()[1].enabled = false
+        if(userSettings.isCam){
+            stream.getTracks()[1].enabled = false
         } else { //You go from unmuted to muted
-            callSettings.userSettings.stream.getTracks()[1].enabled = true
+            stream.getTracks()[1].enabled = true
         }
+
         if(peerObject){
             socket.emit('call-message', {
                 purpose: 'camera',
-                enabled: !isCam,
+                enabled: !userSettings.isCam,
                 room: peerObject.id
             })
         }
-        dispatch(callSettingReducer({
-            userSettings:{
-                ...callSettings.userSettings,
-                ['isCam']: !callSettingReducer.userSettings.isCam
-            }
-        }))
-        setIsCam(!isCam)
+        dispatch(callSettingReducer({userSettings:{ isCam: !userSettings.isCam}}))
     }
 
     function stopScreenShare(){
@@ -72,17 +70,20 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
             track.stop();
         });
 
-        userVideo.current.srcObject = callSettings.userSettings.stream
+        userVideo.current.srcObject = stream
 
-        setIsPresenting(false)
-        setIsFullScreen(false)
-        setScreenCastStream(undefined)
+        dispatch(callSettingReducer({
+            userSettings: {
+                isPresenting: false,
+                isFullScreen: false
+            }
+        }))
 
         if(peer){
             peer.replaceTrack(
               screenCastStream.getVideoTracks()[0],
-              callSettings.userSettings.stream.getVideoTracks()[0],
-              callSettings.userSettings.stream
+              stream.getVideoTracks()[0],
+              stream
             );
         }
 
@@ -98,8 +99,8 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
 
     // Initiated if YOU hang up
     function hangUp(){
-        if(callSettings.userSettings.stream){
-            callSettings.userSettings.stream.getTracks().forEach(function(track) {
+        if(stream){
+            stream.getTracks().forEach(function(track) {
                 track.stop();
             });
         }
@@ -125,14 +126,6 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
             callMessage(socket, callSettings, timeStamp)
         }
 
-        dispatch(chatReducer({
-            callSettings: {
-                id: undefined,
-                isActive: false,
-                members: [],
-                joined: []
-            }
-        }))
         dispatch(callSettingsReset())
         setIsTimer(false)
     }
@@ -192,6 +185,14 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
         })
     }, [isTimer, timer])
 
+    function setFullScreen(){
+        dispatch(callSettingReducer({
+            userSettings: {
+                isFullScreen: !userSettings.isFullScreen
+            }
+        }))
+    }
+
     return(
         <div className="call-window-nav">
             <div className="info-wrapper">
@@ -216,22 +217,22 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
                     <>
                         <i 
                             className="material-icons" 
-                            onClick={(() => { setIsFullScreen(!isFullScreen) })}
+                            onClick={setFullScreen}
                         >
-                            {isFullScreen ? "fullscreen" : "fullscreen_exit"}
+                            {userSettings.isFullScreen ? "fullscreen" : "fullscreen_exit"}
                         </i>
                         <i
                             className="material-icons"
-                            onClick={!isPresenting ? screenShare : stopScreenShare}
+                            onClick={!userSettings.isPresenting ? screenShare : stopScreenShare}
                         >
-                            {!isPresenting ? "screen_share" : "stop_screen_share"}
+                            {!userSettings.isPresenting ? "screen_share" : "stop_screen_share"}
                         </i>
                         <i 
                             className="material-icons" 
                             onClick={stopCamera}
-                            style={{backgroundColor: !isCam ? "#e62b2b" : null}}
+                            style={{backgroundColor: !userSettings.isCam ? "#e62b2b" : null}}
                         >
-                            { isCam ? "videocam" : "videocam_off" }
+                            { userSettings.isCam ? "videocam" : "videocam_off" }
                         </i>
                     </>
 
@@ -239,10 +240,10 @@ export default function CallNav({ isPresenting, screenShare, stopScreenShare, is
                 <i 
                     className="material-icons" 
                     onClick={muteMic}
-                    title={isMuted ? "Unmute" : "Mute"}
-                    style={{backgroundColor: isMuted ? "#e62b2b" : null}}
+                    title={userSettings.isMuted ? "Unmute" : "Mute"}
+                    style={{backgroundColor: userSettings.isMuted ? "#e62b2b" : null}}
                 >
-                    { isMuted ? "mic_off" : "mic" }
+                    { userSettings.isMuted ? "mic_off" : "mic" }
                 </i>
                 <i 
                     className="material-icons call-end"

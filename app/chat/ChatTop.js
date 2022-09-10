@@ -467,7 +467,8 @@ export default function  ChatTop({setWidth, socket}){
             id: current.id,
             members: [...current.members],
             joined: [USER_DATA.account_id],
-            initiator: true
+            initiator: true,
+            initiatorID: USER_DATA.account_id
         }))
     }
 }

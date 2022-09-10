@@ -6,21 +6,23 @@ import Peer from "simple-peer";
 import volumeMeterInit from "./functions/volumeMeterInit";
 import { SocketContext } from "../../components/Socket";
 
-import CallTop          from "./CallTop";
+// Components
 import CallerWindow     from "./CallerWindow";
-import callMessage       from "../ChatBottom/functions/callMessage"
-import CallNav from "./CallNav";
+import callMessage      from "../ChatBottom/functions/callMessage"
+import CallNav          from "./CallNav";
+import CallUI           from "./CallUI";
+import VideoUI          from "./VideoUI";
 
-let peer;
+let peer; // Should peer become a state?
 
-export default function ChatCall({ locale, current, USER_DATA, inputRef }){
+export default function ChatCall({ locale, current, USER_DATA }){
     const dispatch = useDispatch();
     const socket = useContext(SocketContext)
     const callSettings = useSelector((state) => state.callSettingReducer)
-    //const callSettings = useSelector((state) => state.chatReducer.value.callSettings)
+    const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
+    const peerSettings = useSelector((state) => state.callSettingReducer.peerSettings)
 
     const userVideo = useRef(null);
-    const userAudio = useRef(null);
     const peerVideo = useRef(null);
     const peerAudio = useRef(null);
 
@@ -31,18 +33,8 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
     const [peerStream, setPeerStream] = useState(); //peer stream (audio or video)
     const [screenCastStream, setScreenCastStream] = useState();
 
-    // These are call settings for YOU
-    const [isPresenting, setIsPresenting] = useState(false) //
-    const [isMuted, setIsMuted] = useState(false)
-    const [isCam, setIsCam] = useState(false)
-    const [isFullScreen, setIsFullScreen] = useState(false)
-
     // These are call settings for the PEER
-    const [isPeerMuted, setIsPeerMuted] = useState(false)
-    const [isPeerCam, setIsPeerCam] = useState(false)
-    const [isPeerPresenting, setIsPeerPresenting] = useState(false)
     const [peerObject, setPeerObject] = useState(undefined)
-    const [userPeer, setUserPeer] = useState(undefined) // this is your peer profile
 
     // For timer function
     const [isTimer, setIsTimer] = useState(false)
@@ -65,37 +57,18 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
         }
     }, [timer, callSettings.joined])
 
-    // I want to get rid of this useEffect
     useEffect(() => {
-        if(callSettings.isActive && callSettings.initiator){
-            if(callSettings.initiator && !isInCall){
-                setIsInCall(true)
-            } else if(callSettings.joined.find(e => e === USER_DATA.account_id)) {
-                setIsInCall(true)
-            }
-
-            if(callSettings.joined.length === 2){
-                var peerObjectCopy = callSettings.members.filter(e => e.id !== USER_DATA.account_id)[0]
-                setPeerObject(peerObjectCopy)
-            } else if(callSettings.joined.length === 1){
-                setPeerObject(undefined)
-            }
-
-            if(callSettings.isInit && !isActive){
-                if(callSettings.purpose === "call" && !callSettings.userSettings.isCam){
-                    setIsActive(true)
-                    setIsMuted(false)
-                } else {
-                    setIsCam(false)
-                }
-            }
-            
-        } else { // You did NOT initate the call
-            setIsInCall(false)
+        dispatch(callSettingReducer({
+            userSettings: {
+                isMuted: null
+            },
+            initiator: null
+        }))
+        console.log(userSettings)
+        if(callSettings.isInCall && callSettings.isActive){
+            console.log("triggered")
+            initWebRTC()
         }
-    }, [callSettings])
-
-    useEffect(() => {
 
         if(callSettings.isActive){
             if(callSettings.joined.length >= 2){
@@ -104,13 +77,14 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
         } else {
             dispatch(callSettingsReset())
         }
-    }, [callSettings])
 
-    useEffect(() => {
-        if(isInCall && callSettings.isActive){
-            initWebRTC()
+        if(callSettings.joined.length === 2){
+            var peerObjectCopy = callSettings.members.filter(e => e.id !== USER_DATA.account_id)[0]
+            setPeerObject(peerObjectCopy)
+        } else if(callSettings.joined.length === 1){
+            setPeerObject(undefined)
         }
-    }, [isInCall, callSettings.isActive])
+    }, [callSettings.isInCall, callSettings.isActive, callSettings.joined])
 
     /*************************/
 
@@ -123,20 +97,11 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
             audio: true
         })
         .then((stream) => {
-            dispatch(callSettingReducer({
-                userSettings: {
-                    ...callSettings.userSettings,
-                    ['stream']: stream
-                }
-            }))
             setStream(stream)
 
             if(callSettings.purpose === "video"){
                 dispatch(callSettingReducer({
-                    userSettings: {
-                        ...callSettings.userSettings,
-                        ['isCam']: true
-                    }
+                    userSettings: { isCam: true }
                 }))
                 if(userVideo.current){
                     userVideo.current.srcObject = stream
@@ -154,12 +119,10 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
             volumeMeterInit(stream, volumeMeter, callSettings.purpose)
 
             peer = new Peer({
-                initiator: callSettings.initiator === USER_DATA.account_id ? true : false,
+                initiator: callSettings.initiator,
                 trickle: false,
                 stream: stream
             })
-
-            setUserPeer(peer)
 
             // If you are not the initiator, then send a signal back to the one who sent the signal to
             // begin with in order to "answer" the signal
@@ -185,9 +148,9 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                         purpose:    callSettings.purpose,
                         id:         callSettings.id,
                         joined:     callSettings.joined,
-                        room:       callSettings.room,
+                        room:       callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id),
                         members:    callSettings.members,
-                        initiator:  callSettings.initiator,
+                        initiator:  false, // Since the peer we are sending this to is NOT an initiator
                         signalData: signal,
                     }
     
@@ -198,22 +161,12 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
             // This is correct
             peer.on('stream', (stream) => {
                 dispatch(callSettingReducer({
-                    userSettings: {
-                        ...callSettings.userSettings,
-                        ['isMuted']: false
-                    },
-                    peerSettings: {
-                        ...callSettingReducer.peerSettings,
-                        ['peerStream']: stream
-                    }
+                    userSettings: { isMuted: false }
                 }))
 
                 if(callSettings.purpose === "video"){
                     dispatch(callSettingReducer({
-                        userSettings: {
-                            ...callSettings.userSettings,
-                            ['isCam']: true
-                        }
+                        userSettings: { isCam: true }
                     }))
                 }
 
@@ -224,10 +177,7 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                         peerVideo.current.srcObject = stream
                     }
                     dispatch(callSettingReducer({
-                        peerSettings: {
-                            ...callSettingReducer.peerSettings,
-                            ['isPeerCam']: true
-                        }
+                        peerSettings: { isPeerCam: true }
                     }))
                 } else {
                     var peerAudioManual = document.querySelector('.peer-audio')
@@ -270,42 +220,28 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
             socket.on('call-message', (data) => {
                 if(data.purpose === "microphone"){
                     dispatch(callSettingReducer({
-                        peerSettings: {
-                            ...callSettingReducer.peerSettings,
-                            ['isPeerMuted']: data.enabled
-                        }
+                        peerSettings: { isPeerMuted: data.enabled }
                     }))
                 } else if(data.purpose === "camera"){
                     dispatch(callSettingReducer({
-                        peerSettings: {
-                            ...callSettingReducer.peerSettings,
-                            ['isPeerCam']: data.enabled
-                        }
+                        peerSettings: { isPeerCam: data.enabled }
                     }))
                 } else if(data.purpose === "screen-sharing"){
                     if(data.isSharing){
-                        
-                        if(callSettings.userSettings.isPresenting){
+
+                        if(userSettings.isPresenting){
                             stopScreenShare()
                         }
                         dispatch(callSettingReducer({
                             userSettings: {
-                                ...callSettingReducer.userSettings,
-                                ['isFullScreen']: false,
-                                ['isPresenting']: false
+                                isFullScreen: false,
+                                isPresenting: false
                             },
-                            peerSettings: {
-                                ...callSettingReducer.peerSettings,
-                                ['isPeerPresenting']: true
-                            }
+                            peerSettings: { isPeerPresenting: true }
                         }))
-
                     } else {
                         dispatch(callSettingReducer({
-                            peerSettings: {
-                                ...callSettingReducer.peerSettings,
-                                ['isPeerPresenting']: false
-                            }
+                            peerSettings: { isPeerPresenting: false }
                         }))
                     }
                 } else if(data.purpose === "error"){
@@ -347,7 +283,6 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                         purpose: callSettings.purpose
                     }
                 }))
-
                 dispatch(callSettingReducer({
                     isActive: true,
                     joined: [...callSettings.joined, data.joined]
@@ -357,6 +292,7 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
             /*************************************************************/
         })
         .catch((err) => {
+            console.log(err)
             dispatch(chatReducer({
                 ERROR: {
                     PURPOSE: err.message
@@ -375,153 +311,49 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
     return(
         <>
             {
-                isInCall === true && callSettings.isActive &&
+                callSettings.isActive && callSettings.isInCall &&
                 <div className="call-window">
                     <div className="call-window-main">
-                    {
-                        callSettings.joined.length <= 2 &&
-                        <>
-                            {
-                                (callSettings.purpose === "call" && !isCam) &&
-                                <div className="caller-ui call">
-                                    <div className="volume-meter-wrapper">
-                                        <figure className={isMuted ? "muted" : null}>
-                                            {
-                                                isMuted &&
-                                                <i className="material-icons">mic_off</i>
-                                            }
-                                            <img src={ USER_DATA.profile_picture ? USER_DATA.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
-                                        </figure>
-                                        <div className="volume-meter" data-value=""></div>
-                                        {
-                                            !peerObject &&
-                                            <span style={{position: "absolute", bottom: "-40px"}}>Ringing...</span>
-                                        }
-                                    </div>
-                                    {
-                                        peerObject &&
-                                        <div className="volume-meter-wrapper">
-                                            <figure className={isPeerMuted ? "muted" : null}>
-                                                {
-                                                    isPeerMuted &&
-                                                    <i className="material-icons">mic_off</i>
-                                                }
-                                                <img src={ peerObject.profile_picture ? peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
-                                            </figure>
-                                            <div className="volume-meter" data-value=""></div>
-                                        </div>
-                                    }
-                                    <div className="audio-block">
-                                        <audio 
-                                            className="peer-audio" 
-                                            ref={peerAudio} 
-                                            autoPlay 
-                                            muted={isPeerMuted ? true : false}
-                                        ></audio>
-                                    </div>
-                                </div>
-                            }
-                            {
-                               callSettings.purpose === "video" &&
-                                <div className="single-call video">
-                                    <div className={ ((!callSettings.userSettings.isFullScreen || callSettings.peerSettings.isPeerPresenting) && !callSettings.userSettings.isPresenting) ? "peer-screen full-screen" : "peer-screen small-screen" }>
-                                        {
-                                            (!callSettings.peerSettings.isPeerCam && peerObject) &&
-                                            <figure>
-                                                <img src={ peerObject.profile_picture ? peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
-                                            </figure>
-                                        }
-                                        <div className="video-wrapper">
-                                            <div className={!callSettings.peerSettings.isPeerMuted ? "volume-meter" : "volume-meter muted"}>
-                                                {
-                                                    callSettings.peerSettings.isPeerMuted &&
-                                                    <i className="material-icons">mic_off</i>
-                                                }
-                                                {
-                                                    !callSettings.peerSettings.isPeerMuted &&
-                                                    <>
-                                                        <div className="volume-mark-1"></div>
-                                                        <div className="volume-mark-2"></div>
-                                                        <div className="volume-mark-3"></div>
-                                                    </>
-                                                }
-                                            </div>
-                                            <video
-                                                className={callSettings.peerSettings.isPeerPresenting ? "peer-video presenting" : "peer-video" }
-                                                autoPlay
-                                                playsInline
-                                                ref={peerVideo}
-                                            >
-                                            </video>
-                                        </div>
-                                    </div>
-                                    <div className={ ((isFullScreen || isPresenting) && !isPeerPresenting) ? "user-window full-screen" : "user-window small-screen" }>
-                                        {
-                                            !isCam &&
-                                            <figure>
-                                                <img src={ USER_DATA.profile_picture ? USER_DATA.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
-                                            </figure>
-                                        }
-                                        {
-                                            <div className="video-wrapper">
-                                                <div className={!callSettings.userSettings.isMuted ? "volume-meter" : "volume-meter muted"}>
-                                                    {
-                                                        callSettings.userSettings.isMuted &&
-                                                        <i className="material-icons">mic_off</i>
-                                                    }
-                                                    {
-                                                        !callSettings.userSettings.isMuted &&
-                                                        <>
-                                                            <div className="volume-mark-1"></div>
-                                                            <div className="volume-mark-2"></div>
-                                                            <div className="volume-mark-3"></div>
-                                                        </>
-                                                    }
-                                                </div>
-                                                <video
-                                                    className={callSettings.userSettings.isPresenting ? "user-video presenting" : "user-video" }
-                                                    autoPlay
-                                                    playsInline
-                                                    muted  
-                                                    ref={userVideo}
-                                                >
-                                                </video>
-                                            </div>
-                                        }
-                                    </div>
-                                </div>
-                            }
-                            {
-                                callSettings.joined.length === 1 &&
-                                <audio src="../assets/call_generic_sound.aac" autoPlay loop></audio>
-                            }
-                        </>
-                    }
+                        {
+                            callSettings.joined.length <= 2 &&
+                            <>
+                                {
+                                    callSettings.purpose === "call" &&
+                                    <CallUI
+                                        peerObject={peerObject}
+                                        peerAudio={peerAudio}
+                                    />
+                                }
+                                {
+                                    callSettings.purpose === "video" &&
+                                    <VideoUI
+                                        peerObject={peerObject}
+                                        peerVideo={peerVideo}
+                                        userVideo={userVideo}
+                                    />
+                                }
+                            </>
+                        }
+                        {
+                            callSettings.joined.length === 1 &&
+                            <audio src="../assets/call_generic_sound.aac" autoPlay loop></audio>
+                        }
                     </div>
                     <CallNav 
-                        callSettings={callSettings}
-                        isPresenting={isPresenting}
-                        isMuted={isMuted}
-                        setIsMuted={setIsMuted}
-                        setIsFullScreen={setIsFullScreen}
-                        isFullScreen={isFullScreen}
-                        current={current}
-                        USER_DATA={USER_DATA}
                         isTimer={isTimer}
                         timeStamp={timeStamp}
                         setTimeStamp={setTimeStamp}
                         timer={timer}
                         setTimer={setTimer}
-                        isCam={isCam}
                         socket={socket}
                         stream={stream}
                         peerObject={peerObject}
                         screenCastStream={screenCastStream}
                         peer={peer}
-                        setIsPresenting={setIsPresenting}
                         setScreenCastStream={setScreenCastStream}
                         setIsTimer={setIsTimer}
                         setIsInCall={setIsInCall}
+                        userVideo={userVideo}
                     />
                 </div>
             }
@@ -529,10 +361,6 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
                 callSettings.isActive &&
                 <CallerWindow
                     socket={socket}
-                    isInCall={isInCall}
-                    setIsInCall={setIsInCall}
-                    setStream={setStream}
-                    setPeerStream={setPeerStream}
                 />
             }
         </>
@@ -540,8 +368,8 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
 
     function callTerminated(){
         console.log("Call terminated was triggered")
-        if(callSettings.userSettings.stream){
-            callSettings.userSettings.stream.getTracks().forEach(function(track) {
+        if(stream){
+            stream.getTracks().forEach(function(track) {
                 track.stop();
             });
         }
@@ -563,6 +391,7 @@ export default function ChatCall({ locale, current, USER_DATA, inputRef }){
         dispatch(callSettingsReset())
 
         if(err){
+            console.log(err)
             dispatch(chatReducer({
                 ERROR: {
                     PURPOSE: err.message ? err.message : err

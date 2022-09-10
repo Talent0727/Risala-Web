@@ -9,25 +9,27 @@ export const callSettingsSlice = createSlice({
         id: undefined,
         members: [],
         joined: [],
-        initiator: undefined,
+        initiator: false,
+        initiatorID: undefined,
         userSettings: {
             isCam: false,
             isMuted: false,
             isPresenting: false,
-            isFullScreen: false,
-            stream: undefined
+            isFullScreen: false
         },
         peerSettings: {
             isPeerMuted: false,
             isPeerCam: false,
             isPeerPresenting: false,
-            peerStream: undefined
         },
         signalData: undefined
     },
     reducers: {
         callSettingReducer: (state, action) => {
             for (const [key, value] of Object.entries(action.payload)) {
+                console.log(state[key])
+                
+                console.log(key, state[key], value, action.payload)
                 state[key] = value
             }
         },
@@ -39,19 +41,22 @@ export const callSettingsSlice = createSlice({
                 id: undefined,
                 members: [],
                 joined: [],
-                initiator: undefined,
+                initiator: false,
+                initiatorID: undefined,
                 userSettings: {
                     isCam: false,
                     isMuted: false,
-                    isPresenting: false
+                    isPresenting: false,
+                    isFullScreen: false
                 },
                 peerSettings: {
                     isPeerMuted: false,
                     isPeerCam: false,
-                    isPeerPresenting: false
+                    isPeerPresenting: false,
                 },
                 signalData: undefined
             }
+            console.log(state)
         }
     }
 })

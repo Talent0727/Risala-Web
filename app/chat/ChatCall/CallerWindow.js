@@ -3,10 +3,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { chatReducer } from "../../features/chat";
 import { callSettingReducer } from "../../features/callSettings";
 
-export default function CallerWindow({ socket, isInitiator, isInCall, setIsInCall, callMessage }){
+export default function CallerWindow({ socket }){
     const dispatch = useDispatch();
     const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
-    const callSettings = useSelector((state) => state.chatReducer.value.callSettings)
+    const callSettings = useSelector((state) => state.callSettingReducer)
 
     function acceptCall(){
         var callObject = {
@@ -20,9 +20,10 @@ export default function CallerWindow({ socket, isInitiator, isInCall, setIsInCal
             signalData: callSettings.signalData
         }
         
-        dispatch(chatReducer({callSettings: callObject}))
         dispatch(callSettingReducer({
-            joined: [...callSettings.joined, USER_DATA.account_id]
+            isInCall: true,
+            joined: [...callSettings.joined, USER_DATA.account_id],
+            signalData: callSettings.signalData
         }))
     }
 
@@ -44,7 +45,7 @@ export default function CallerWindow({ socket, isInitiator, isInCall, setIsInCal
     return(
         <>
             {
-                (callSettings.initiator !== USER_DATA.account_id && !callSettings.joined.find(e => e.id === USER_DATA.account_id) && callSettings.isActive) &&
+                (!callSettings.initiator && !callSettings.joined.find(e => e.id === USER_DATA.account_id) && callSettings.isActive) &&
                 <div className="caller-window">
                     <figure>
                         {

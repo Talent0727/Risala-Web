@@ -50,6 +50,7 @@ export default function Index(){
     const [width, setWidth] = useState()
     const [access, setAccess] = useState(false)
 
+    // Socket routes
     useEffect(() => {
         if(USER_DATA){
             socket.connect()
@@ -111,8 +112,8 @@ export default function Index(){
         }
     }, [current])
 
+    // Check if user exists
     useEffect(() => {
-        //window.scrollTo({ top: 0, behavior: "smooth" }); <-- is this needed?
         if (localStorage.getItem('user')) {
             var user = JSON.parse(localStorage.getItem('user'))
 
@@ -137,6 +138,7 @@ export default function Index(){
 
     }, [])
 
+    // Window Resize listener, prevent mobile from using desktop version
     useEffect(() => {
         window.addEventListener('resize', resize)
 
@@ -181,7 +183,6 @@ export default function Index(){
     }
 
 
-
     return(
         <>
             <Head>
@@ -189,8 +190,8 @@ export default function Index(){
                 <meta name="description" content="Webbutvecklare" />
                 <meta name="author" content="Patrick Tannoury" />
                 <meta name="robots" content="index, follow" />
-                <meta property="og:url" content="https://codenoury.se" />
-                <meta property="og:description" content={locale !== "sv" ? "Personalised Web development" : "Personlig Webbutveckling"}/>
+                <meta property="og:url" content="https://risala.codenoury.se" />
+                <meta property="og:description" content={locale !== "sv" ? "Open source chat application" : "Open source chatapplikation"}/>
                 <meta property="og:image" content="https://codenoury.se/assets/og_image.png"/>
                 <link rel="icon" type="image/png" sizes="16x16" href="https://codenoury.se/assets/favicon-16x16.png"/>
                 <link rel="icon" type="image/png" sizes="32x32" href="https://codenoury.se/assets/favicon-32x32.png"/>
@@ -251,7 +252,6 @@ export default function Index(){
                         locale={locale}
                         current={current}
                         USER_DATA={USER_DATA}
-                        inputRef={inputRef}
                     />
                 </div>
                 <ChatWindow

@@ -113,6 +113,7 @@ io.on('connection', (socket) => {
     /*                        CALLS                        */
     /*******************************************************/
     socket.on('call-init', (data) => {
+        console.log(data)
         socket.to(data.room).emit('call-init', data)
     })
 

@@ -27,7 +27,7 @@ export default function callMessage(socket, callSettings, callTime = null, isMis
         timestamp: getCurrentTime(),
         files: null,
         file_paths: null,
-        sender_id: callSettings.initiator,
+        sender_id: callSettings.initiatorID,
         reciever_id: callSettings.members.length > 2 ? callSettings.id : callSettings.members.filter(e => e.id !== USER_DATA.account_id)[0].id,
         message_id: uuidv4(),
         reply_text: null,

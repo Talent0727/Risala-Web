@@ -15,7 +15,7 @@ export default function messageStyler(index, array, sender, senderTime){
         var isPreviousEmoji = array[index - 1].text !== null ? removeEmojis(array[index - 1].text) : null
         var isNextEmoji = array[index + 1].text !== null ? removeEmojis(array[index +1].text) : null
 
-        if(sender === previousSender && senderTime === previousSenderTime && !array[index + 1].time_separator && isPreviousEmoji !== ""){
+        if(sender === previousSender && senderTime === previousSenderTime && !array[index - 1].time_separator && isPreviousEmoji !== ""){
             previousMatch = true;
         }
 
