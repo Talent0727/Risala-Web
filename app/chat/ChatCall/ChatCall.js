@@ -310,6 +310,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
     function screenShare(){
         navigator.mediaDevices.getDisplayMedia({ cursor: true })
         .then((screenStream) => {
+            setScreenCastStream(screenStream)
             if(peer){
                 peer.replaceTrack(
                     stream.getVideoTracks()[0],
