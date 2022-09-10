@@ -283,6 +283,10 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     joined: [...callSettings.joined, data.joined]
                 }))
             })
+            
+            socket.on('call-error', (data) => {
+                console.log(data)
+            })
 
             /*************************************************************/
         })
@@ -293,10 +297,9 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     PURPOSE: err.message
                 }
             }))
-            socket.emit('call-message', {
-                purpose: 'error',
+            socket.emit('call-error', {
                 error: err.message,
-                room: callSettings.joined.filter(e => e.id !== USER_DATA.account_id)
+                room: callSettings.members.map(e => e.id)
             })
         
             callTerminated()

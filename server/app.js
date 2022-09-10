@@ -136,4 +136,8 @@ io.on('connection', (socket) => {
     socket.on('call-message', (data) => {
         socket.to(data.room).emit('call-message', data)
     })
+
+    socket.on('call-error', (data) => {
+        socket.to(data.room).emit('call-error', data)
+    })
 });
