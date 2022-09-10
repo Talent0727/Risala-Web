@@ -385,6 +385,29 @@ export default function ChatCall({ locale, current, USER_DATA }){
         }
     }
 
+    function stopCamera(){
+        if(userSettings.isPresenting){
+            screenCastStream.getVideoTracks().forEach(function (track) {
+                track.stop();
+            });
+        }
+
+        if(userSettings.isCam){
+            stream.getTracks()[1].enabled = false
+        } else { //You go from unmuted to muted
+            stream.getTracks()[1].enabled = true
+        }
+
+        if(peerObject){
+            socket.emit('call-message', {
+                purpose: 'camera',
+                enabled: !userSettings.isCam,
+                room: peerObject.id
+            })
+        }
+        dispatch(callSettingReducer({userSettings:{ isCam: !userSettings.isCam}}))
+    }
+
     return(
         <>
             {
@@ -419,6 +442,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     <CallNav 
                         screenShare={screenShare}
                         stopScreenShare={stopScreenShare}
+                        stopCamera={stopCamera}
                         isTimer={isTimer}
                         timeStamp={timeStamp}
                         setTimeStamp={setTimeStamp}
@@ -427,9 +451,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                         socket={socket}
                         stream={stream}
                         peerObject={peerObject}
-                        screenCastStream={screenCastStream}
                         peer={peer}
-                        setScreenCastStream={setScreenCastStream}
                         setIsTimer={setIsTimer}
                         userVideo={userVideo}
                     />
