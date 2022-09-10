@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatReducer } from "../../features/chat";
-import { callSettingReducer } from "../../features/callSettings";
+import { callSettingReducer, callSettingsReset } from "../../features/callSettings";
 
 export default function CallerWindow({ socket }){
     const dispatch = useDispatch();
@@ -32,14 +32,7 @@ export default function CallerWindow({ socket }){
             user: USER_DATA.account_id,
             room: callSettings.joined.filter(e => e.id !== USER_DATA.account_id)
         })
-        dispatch(chatReducer({
-            callSettings: {
-                id: undefined,
-                isActive: false,
-                members: [],
-                joined: []
-            }
-        }))
+        dispatch(callSettingsReset())
     }
 
     return(

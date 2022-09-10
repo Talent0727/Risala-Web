@@ -121,14 +121,11 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
             volumeMeterInit(stream, volumeMeter, callSettings.purpose)
 
-            console.log(callSettings.initiator, callSettings.initiatorID)
             peer = new Peer({
                 initiator: callSettings.initiator || callSettings.initiatorID === USER_DATA.account_id ? true : false,
                 trickle: false,
                 stream: stream
             })
-
-            console.log(peer)
 
             // If you are not the initiator, then send a signal back to the one who sent the signal to
             // begin with in order to "answer" the signal
@@ -175,7 +172,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
                 if(callSettings.purpose === "video"){
                     if(peerVideo.current){
-                        peerVideo.current.srcObject = peerStream
+                        peerVideo.current.srcObject = stream
                     }
                     dispatch(callSettingReducer({
                         peerSettings: { isPeerCam: true }
@@ -183,9 +180,9 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 } else {
                     var peerAudioManual = document.querySelector('.peer-audio')
                     if(peerAudio.current){
-                        peerAudio.current.srcObject = peerStream
+                        peerAudio.current.srcObject = stream
                     } else if (peerAudioManual) {
-                        peerAudioManual.srcObject = peerStream
+                        peerAudioManual.srcObject = stream
                     }
                 }
 
@@ -305,25 +302,54 @@ export default function ChatCall({ locale, current, USER_DATA }){
     }
 
     function screenShare(){
-        navigator.mediaDevices
-        .getDisplayMedia({ cursor: true })
+        navigator.mediaDevices.getDisplayMedia({ cursor: true })
         .then((screenStream) => {
-          peer.replaceTrack(
-            stream.getVideoTracks()[0],
-            screenStream.getVideoTracks()[0],
-            stream
-          );
-          setScreenCastStream(screenStream);
-          // userVideo.current.srcObject = screenStream;
-          screenStream.getTracks()[0].onended = () => {
-            peer.replaceTrack(
-              screenStream.getVideoTracks()[0],
-              stream.getVideoTracks()[0],
-              stream
-            );
-          };
+            if(peer){
+                peer.replaceTrack(
+                    stream.getVideoTracks()[0],
+                    screenStream.getVideoTracks()[0],
+                    stream
+                );
+            }
+
+            dispatch(callSettingReducer({
+                userSettings: {
+                    isPresenting: true
+                }
+            }))
+            userVideo.current.srcObject = screenStream
+
+            screenStream.getTracks()[0].onended = () => {
+                userVideo.current.srcObject = stream
+                dispatch(callSettingReducer({
+                    userSettings: {
+                        isPresenting: false,
+                        isFullScreen: false
+                    }
+                }))
+                if(peer){
+                    peer.replaceTrack(stream.getVideoTracks()[0]);
+                }
+                if(peerObject){
+                    socket.emit('call-message', {
+                        purpose: 'screen-sharing',
+                        isSharing: false,
+                        room: peerObject.id
+                    })
+                }
+            };
         })
+
+        //Emit event
+        if(peerObject){
+            socket.emit('call-message', {
+                purpose: 'screen-sharing',
+                isSharing: true,
+                room: peerObject.id
+            })
+        }
     }
+    
 
     function stopScreenShare(){
         screenCastStream.getVideoTracks().forEach(function (track) {
