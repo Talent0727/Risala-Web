@@ -21,7 +21,7 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                     <div className={!peerSettings.isPeerMuted ? "volume-meter" : "volume-meter muted"}>
                         {
                             peerSettings.isPeerMuted &&
-                            <i className="material-icons">mic_off</i>
+                            <i className="material-icons" style={{backgroundColor: '#e62b2b'}}>mic_off</i>
                         }
                         {
                             !callSettings.peerSettings.isPeerMuted &&
@@ -53,7 +53,7 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                         <div className={!userSettings.isMuted ? "volume-meter" : "volume-meter muted"}>
                             {
                                 userSettings.isMuted &&
-                                <i className="material-icons">mic_off</i>
+                                <i className="material-icons" style={{backgroundColor: '#e62b2b'}}>mic_off</i>
                             }
                             {
                                 !userSettings.isMuted &&
