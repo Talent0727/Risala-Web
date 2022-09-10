@@ -285,6 +285,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             })
             
             socket.on('call-error', (data) => {
+                console.log('************** Call ERROR *******************')
                 console.log(data)
             })
 
