@@ -9,17 +9,6 @@ export default function CallerWindow({ socket }){
     const callSettings = useSelector((state) => state.callSettingReducer)
 
     function acceptCall(){
-        var callObject = {
-            id: callSettings.id,
-            isActive: true,
-            joined: [...callSettings.joined, USER_DATA.account_id],
-            members: callSettings.members,
-            room: callSettings.joined,
-            initiator: callSettings.initiator,
-            purpose: callSettings.purpose,
-            signalData: callSettings.signalData
-        }
-        
         dispatch(callSettingReducer({
             isInCall: true,
             joined: [...callSettings.joined, USER_DATA.account_id],

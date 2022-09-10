@@ -54,7 +54,7 @@ export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTi
             socket.emit('call-exit', {
                 id: callSettings.id,
                 joined: callSettings.joined,
-                room: callSettings.joined.filter(e => e != USER_DATA.account_id),
+                room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id),
                 callSettings: callSettings,
                 timeStamp: timeStamp,
                 initiator: callSettings.initiator
