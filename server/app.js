@@ -120,12 +120,12 @@ io.on('connection', (socket) => {
     socket.on('call-rejected', (data) => {
         socket.to(data.room).emit('call-rejected', data)
     })
+    
     socket.on('call-closed', (data) => {
         socket.to(data.room).emit('call-closed', data)
     })
 
     socket.on('call-join', (data) => {
-        console.log(data)
         socket.to(data.room).emit('call-join', data)
     })
 

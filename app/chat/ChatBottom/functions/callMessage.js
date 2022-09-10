@@ -99,9 +99,9 @@ export default function callMessage(socket, callSettings, callTime = null, isMis
         // Add recentMessage to messageObject to reduce Backend strain
         var recentMessage = newChat.recent_message
         messageObject = { ...messageObject, recentMessage}
-        socket.emit('message', messageObject)
-    } else {
         console.log(messageObject)
+        //socket.emit('message', messageObject)
+    } else {
         store.dispatch(chatReducer({
             chat: [...chat, messageObject],
             chats: [newChat, ...chats.filter((e) => e.id !== messageObject.id)] 
@@ -110,6 +110,7 @@ export default function callMessage(socket, callSettings, callTime = null, isMis
         // Add recentMessage to messageObject to reduce Backend strain
         var recentMessage = newChat.recent_message
         messageObject = { ...messageObject, recentMessage}
-        socket.emit('message', messageObject)
+        console.log(messageObject)
+        //socket.emit('message', messageObject)
     }
 }

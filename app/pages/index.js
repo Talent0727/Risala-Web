@@ -248,7 +248,6 @@ export default function Index(){
                         </div>
                     }
                     <ChatCall
-                        socket={socket}
                         locale={locale}
                         current={current}
                         USER_DATA={USER_DATA}

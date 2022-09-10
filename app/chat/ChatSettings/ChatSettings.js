@@ -194,7 +194,7 @@ export default function ChatSettings({ locale, current, USER_DATA }){
                                 :
                                 <>
                                     {
-                                        COUNTER_DATA &&
+                                        COUNTER_DATA[0] &&
                                         <>
                                             <figure>
                                                 <img src={(current.members && current.members.length > 0) ? COUNTER_DATA[0].profile_picture ? COUNTER_DATA[0].profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" : "https://codenoury.se/assets/generic-profile-picture.png"}/>

@@ -1,6 +1,9 @@
 import { callSettingReducer } from "../../features/callSettings"
+import { chatReducer } from "../../features/chat"
+import { useSelector } from "react-redux"
 
 export default function VideoUI({ peerObject, peerVideo, userVideo }){
+    const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
     const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
     const peerSettings = useSelector((state) => state.callSettingReducer.peerSettings)
@@ -38,9 +41,9 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                     </video>
                 </div>
             </div>
-            <div className={ ((isFullScreen || isPresenting) && !isPeerPresenting) ? "user-window full-screen" : "user-window small-screen" }>
+            <div className={ ((userSettings.isFullScreen || userSettings.isPresenting) && !peerSettings.isPeerPresenting) ? "user-window full-screen" : "user-window small-screen" }>
                 {
-                    !isCam &&
+                    !userSettings.isCam &&
                     <figure>
                         <img src={ USER_DATA.profile_picture ? USER_DATA.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
                     </figure>

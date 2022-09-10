@@ -5,16 +5,8 @@ export const chatSlice = createSlice({
     initialState: {
         value: {
             isMobile: false,
-            callSettings: {
-                isActive: false,
-                purpose: undefined,
-                id: undefined,
-                members: [],
-                joined: [],
-                initiator: undefined,
-            },
-            chat: [], // This needs to be fixed in dispatch
-            chats: undefined, //Does not seem to work/not being used
+            chat: [],
+            chats: undefined, 
             chat_settings: {
                 color: "#e1872c",
                 emoji: "👍",

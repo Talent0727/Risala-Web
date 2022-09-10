@@ -2,7 +2,6 @@ import { useSelector } from "react-redux"
 import { callSettingReducer } from "../../features/callSettings"
 
 export default function CallUI({ peerObject, peerAudio}){
-    const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
     const peerSettings = useSelector((state) => state.callSettingReducer.peerSettings)
     const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
