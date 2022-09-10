@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { chatReducer } from "../../features/chat";
-import { callSettingReducer, callSettingsReset } from "../../features/callSettings";
+import { chatReducer } from "../../../features/chat";
+import { callSettingReducer, callSettingsReset } from "../../../features/callSettings";
 
 export default function CallerWindow({ socket }){
     const dispatch = useDispatch();

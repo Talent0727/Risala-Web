@@ -3,15 +3,17 @@ import { useDispatch, useSelector } from "react-redux";
 import { chatReducer } from "../../features/chat";
 import { callSettingReducer, callSettingsReset } from "../../features/callSettings";
 import Peer from "simple-peer";
-import volumeMeterInit from "./functions/volumeMeterInit";
 import { SocketContext } from "../../components/Socket";
 
 // Components
-import CallerWindow     from "./CallerWindow";
+import CallerWindow     from "./components/CallerWindow";
+import CallNav          from "./components/CallNav";
+import CallUI           from "./components/CallUI";
+import VideoUI          from "./components/VideoUI";
+
+// Functions
 import callMessage      from "../ChatBottom/functions/callMessage"
-import CallNav          from "./CallNav";
-import CallUI           from "./CallUI";
-import VideoUI          from "./VideoUI";
+import volumeMeterInit  from "./functions/volumeMeterInit";
 
 let peer; // Should peer become a state?
 
@@ -284,21 +286,21 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
             /*************************************************************/
         })
-        //.catch((err) => {
-        //    console.log(err)
-        //    dispatch(chatReducer({
-        //        ERROR: {
-        //            PURPOSE: err.message
-        //        }
-        //    }))
-        //    socket.emit('call-message', {
-        //        purpose: 'error',
-        //        error: err.message,
-        //        room: callSettings.joined.filter(e => e.id !== USER_DATA.account_id)
-        //    })
-        //
-        //    callTerminated()
-        //})
+        .catch((err) => {
+            console.log(err)
+            dispatch(chatReducer({
+                ERROR: {
+                    PURPOSE: err.message
+                }
+            }))
+            socket.emit('call-message', {
+                purpose: 'error',
+                error: err.message,
+                room: callSettings.joined.filter(e => e.id !== USER_DATA.account_id)
+            })
+        
+            callTerminated()
+        })
     }
 
     function screenShare(){

@@ -1,5 +1,5 @@
-import { callSettingReducer } from "../../features/callSettings"
-import { chatReducer } from "../../features/chat"
+import { callSettingReducer } from "../../../features/callSettings"
+import { chatReducer } from "../../../features/chat"
 import { useSelector } from "react-redux"
 
 export default function VideoUI({ peerObject, peerVideo, userVideo }){

@@ -50,6 +50,12 @@ export default function Index(){
     const [width, setWidth] = useState()
     const [access, setAccess] = useState(false)
 
+    useEffect(() => {
+        if(ERROR){
+            setTimeout(() => { dispatch(chatReducer({ERROR: false}))}, 10000)
+        }
+    }, [ERROR])
+
     // Socket routes
     useEffect(() => {
         if(USER_DATA){

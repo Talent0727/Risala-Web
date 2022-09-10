@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { chatReducer } from "../../features/chat";
-import { callSettingReducer, callSettingsReset } from "../../features/callSettings";
-import callMessage from "../ChatBottom/functions/callMessage";
+import { chatReducer } from "../../../features/chat";
+import { callSettingReducer, callSettingsReset } from "../../../features/callSettings";
+import callMessage from "../../ChatBottom/functions/callMessage";
 
 export default function CallNav({ screenShare, stopScreenShare, isTimer, timeStamp, setTimeStamp, timer, setTimer, socket, stream, peerObject, screenCastStream, peer, setScreenCastStream, setIsTimer, userVideo }){
     const dispatch = useDispatch();
