@@ -379,11 +379,18 @@ export default function ChatCall({ locale, current, USER_DATA }){
         }))
 
         if(peer){
-            peer.replaceTrack(
-              screenCastStream.getVideoTracks()[0],
-              stream.getVideoTracks()[0],
-              stream
-            );
+            try {
+                peer.replaceTrack(
+                    screenCastStream.getVideoTracks()[0],
+                    stream.getVideoTracks()[0],
+                    stream
+                );
+            } catch(err){
+                peer.replaceTrack(
+                    stream.getVideoTracks()[0],
+                    stream
+                );
+            }
         }
 
         //Emit event
