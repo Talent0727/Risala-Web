@@ -348,34 +348,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             userVideo.current.srcObject = screenStream
 
             screenStream.getTracks()[0].onended = () => {
-                userVideo.current.srcObject = stream
-                dispatch(callSettingReducer({
-                    userSettings: {
-                        isPresenting: false,
-                        isFullScreen: false
-                    }
-                }))
-
-                try{
-                    if(peer){
-                        peer.replaceTrack(
-                            stream.getVideoTracks()[0],
-                            screenStream.getVideoTracks()[0],
-                            stream
-                        );
-                    }
-                } catch(err){
-                    console.error(err)
-                }
-
-
-                if(peerObject){
-                    socket.emit('call-message', {
-                        purpose: 'screen-sharing',
-                        isSharing: false,
-                        room: peerObject.id
-                    })
-                }
+                stopScreenShare()
             };
         })
 
