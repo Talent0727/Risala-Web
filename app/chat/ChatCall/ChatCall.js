@@ -198,12 +198,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             if(callSettings.purpose === "video"){
                 dispatch(callSettingReducer({ userSettings: { isCam: true }}))
                 if(userVideo.current){
-                    try {
-                        userVideo.current.srcObject = userSettings.stream
-                    } catch(err){
-                        console.log(err)
-                        userVideo.current.srcObject = stream
-                    }
+                    userVideo.current.srcObject = stream
                 } else {
                     document.querySelector('.user-video').srcObject = stream
                 }
