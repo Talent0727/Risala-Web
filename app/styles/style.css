@@ -5074,7 +5074,7 @@ a:active {
   margin: 10px auto;
 }
 
-.error-window {
+.message-window {
   top: -10%;
   z-index: 1000;
   left: calc(50% - 175px);
@@ -5083,6 +5083,32 @@ a:active {
   flex-direction: row;
   align-items: center;
   background-color: #e62b2b;
+  padding: 12px 22px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.7019607843);
+  width: 350px;
+}
+.message-window.appear {
+  -webkit-animation: error 300ms ease forwards;
+          animation: error 300ms ease forwards;
+}
+.message-window i {
+  margin-right: 10px;
+}
+.message-window span {
+  font-size: 14px;
+  color: #f4f4f4;
+}
+
+.error-window {
+  top: -10%;
+  z-index: 1000;
+  left: calc(50% - 175px);
+  position: fixed;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: #141414;
   padding: 12px 22px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.7019607843);

@@ -94,7 +94,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 console.log(data)
                 dispatch(callSettingsReset())
                 dispatch(chatReducer({
-                    ERROR: {
+                    MESSAGE: {
                         PURPOSE: `Call closed by: ${data.name}`
                     }
                 }))
