@@ -8,7 +8,6 @@ const socketFunction = require('./socketFunction')
 
 const { createServer } = require("http");
 const { Server } = require("socket.io");
-const { ExpressPeerServer } = require('peer')
 
 
 /***************** Configuration ***************** */
