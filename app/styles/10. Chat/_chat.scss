@@ -270,7 +270,10 @@
     border: 1px solid $white-2;
     width: 350px;
     &.appear{
-        animation: error 300ms ease forwards;
+        animation: message 300ms ease forwards;
+    }
+    &:not(.appear){
+        animation: error2 300ms ease forwards;
     }
     i{
         margin-right: 10px;
@@ -297,6 +300,9 @@
     &.appear{
         animation: error 300ms ease forwards;
     }
+    &:not(.appear){
+        animation: error2 300ms ease forwards;
+    }
     i{
         margin-right: 10px;
     }
@@ -305,12 +311,23 @@
         color: $white;
     }
 }
-
+@keyframes message {
+    from {
+        top: -10%;
+    } to {
+        top: 10%;
+    }
+}
 @keyframes error {
     from {
         top: -10%;
     } to {
         top: 5%;
+    }
+}
+@keyframes error2 {
+    to {
+        top: -10%;
     }
 }
 

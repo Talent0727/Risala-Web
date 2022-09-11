@@ -88,7 +88,11 @@ export default function ChatCall({ locale, current, USER_DATA }){
             })
             socket.on('call-error', (data) => {
                 console.log('************** Call ERROR *******************')
-                console.log(data)
+                dispatch(chatReducer({
+                    ERROR: {
+                        PURPOSE: `An error occured by your peer: ${data.error}`
+                    }
+                }))
                 callTerminated()
             })
             socket.on('call-closed', (data) => {
@@ -169,14 +173,13 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     /*************************/
 
-    function initWebRTC(){
-        console.log("Initiated by:", USER_DATA.account_id)
+    function initWebRTC(noVideo = false){
         setTimeStamp('00:00:00')
         setIsTimer(true)
         setTimer(0)
 
         navigator.mediaDevices.getUserMedia({ 
-            video: callSettings.purpose === "video" ? true : false,
+            video: (callSettings.purpose === "video" && !noVideo) ? true : false,
             audio: true
         })
         .then((stream) => {
@@ -215,6 +218,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             // begin with in order to "answer" the signal
             // This is the 2nd signal
             if(!callSettings.initiator){
+                console.log("Signal")
                 peer.signal(callSettings.signalData)
             }
 
@@ -240,23 +244,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 }
             })
 
-
-            // This is correct
-            //peer.on('stream', (stream) => {
-            //    setPeerStream(stream)
-            //    dispatch(callSettingReducer({
-            //        userSettings: { isMuted: false }
-            //    }))
-            //
-            //    if(callSettings.purpose === "video"){
-            //        dispatch(callSettingReducer({
-            //            userSettings: { isCam: true }
-            //        }))
-            //    }
-            //
-            //    setTimer(0)
-            //})
-
             // This is correct
             peer.on('stream', (stream) => {
                 setTimer(0)
@@ -264,6 +251,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 dispatch(callSettingReducer({
                     userSettings: { isMuted: false },
                 }))
+
                 if(callSettings.purpose === "video"){
                     peerVideo.current.srcObject = stream
                     dispatch(callSettingReducer({
@@ -291,6 +279,23 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 volumeMeterInit(stream, volumeMeter, callSettings.purpose)
             })
 
+
+            // This is correct
+            //peer.on('stream', (stream) => {
+            //    setPeerStream(stream)
+            //    dispatch(callSettingReducer({
+            //        userSettings: { isMuted: false }
+            //    }))
+            //
+            //    if(callSettings.purpose === "video"){
+            //        dispatch(callSettingReducer({
+            //            userSettings: { isCam: true }
+            //        }))
+            //    }
+            //
+            //    setTimer(0)
+            //})
+
             // If the call was interrupted
             peer.on('close', (err) => {
                 console.log(err)
@@ -309,20 +314,31 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
             /*************************************************************/
         })
-        //.catch((err) => {
-        //    console.log(err)
-        //    dispatch(chatReducer({
-        //        ERROR: {
-        //            PURPOSE: err.message
-        //        }
-        //    }))
-        //    socket.emit('call-error', {
-        //        error: err.message,
-        //        room: callSettings.members.map(e => e.id)
-        //    })
-        //
-        //    callTerminated()
-        //})
+        .catch((err) => {
+            console.error(err)
+            if(err.message === "Requested device not found" && callSettings.purpose === "video"){
+                console.log("Error with video and camera access")
+
+                try {
+                    initWebRTC(true)
+                } catch(err){
+                    console.log(err)
+                    dispatch(chatReducer({
+                        ERROR: {
+                            PURPOSE: err.message
+                        }
+                    }))
+        
+                    socket.emit('call-error', {
+                        error: err.message,
+                        room: callSettings.members.map(e => e.id)
+                    })
+                
+                    callTerminated()
+                }
+                initWebRTC(true)
+            }
+        })
     }
 
     function screenShare(){

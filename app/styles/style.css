@@ -5089,8 +5089,12 @@ a:active {
   width: 350px;
 }
 .message-window.appear {
-  -webkit-animation: error 300ms ease forwards;
-          animation: error 300ms ease forwards;
+  -webkit-animation: message 300ms ease forwards;
+          animation: message 300ms ease forwards;
+}
+.message-window:not(.appear) {
+  -webkit-animation: error2 300ms ease forwards;
+          animation: error2 300ms ease forwards;
 }
 .message-window i {
   margin-right: 10px;
@@ -5118,6 +5122,10 @@ a:active {
   -webkit-animation: error 300ms ease forwards;
           animation: error 300ms ease forwards;
 }
+.error-window:not(.appear) {
+  -webkit-animation: error2 300ms ease forwards;
+          animation: error2 300ms ease forwards;
+}
 .error-window i {
   margin-right: 10px;
 }
@@ -5126,6 +5134,23 @@ a:active {
   color: #f4f4f4;
 }
 
+@-webkit-keyframes message {
+  from {
+    top: -10%;
+  }
+  to {
+    top: 10%;
+  }
+}
+
+@keyframes message {
+  from {
+    top: -10%;
+  }
+  to {
+    top: 10%;
+  }
+}
 @-webkit-keyframes error {
   from {
     top: -10%;
@@ -5134,13 +5159,22 @@ a:active {
     top: 5%;
   }
 }
-
 @keyframes error {
   from {
     top: -10%;
   }
   to {
     top: 5%;
+  }
+}
+@-webkit-keyframes error2 {
+  to {
+    top: -10%;
+  }
+}
+@keyframes error2 {
+  to {
+    top: -10%;
   }
 }
 @-webkit-keyframes wave {

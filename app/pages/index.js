@@ -274,7 +274,7 @@ export default function Index(){
                 <ChatImageCarousel />
                 <div 
                     className={!ERROR ? "error-window" : "error-window appear"}
-                    style={{top: (MESSAGE && ERROR) ? `${(document.querySelector('.message-window').offsetHeight + 10) + document.querySelector('.error-window').offsetHeight}px` : null}}
+                    style={{top: (MESSAGE && ERROR) ? '150px' : null}}
                 >
                     <i className="material-icons">error</i>
                     <span>{ERROR.PURPOSE}</span>
