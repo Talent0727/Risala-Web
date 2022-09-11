@@ -7632,6 +7632,7 @@ a:active {
 .call-window .call-window-main .video .presentation-information-nav figure {
   width: 30px;
   height: 30px;
+  margin-right: 20px;
 }
 .call-window .call-window-main .video .full-screen {
   display: flex;

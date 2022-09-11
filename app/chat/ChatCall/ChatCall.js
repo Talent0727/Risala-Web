@@ -356,9 +356,18 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     }
                 }))
 
-                if(peer){
-                    peer.replaceTrack(stream.getVideoTracks()[0]);
+                try{
+                    if(peer){
+                        peer.replaceTrack(
+                            stream.getVideoTracks()[0],
+                            screenStream.getVideoTracks()[0],
+                            stream
+                        );
+                    }
+                } catch(err){
+                    console.error(err)
                 }
+
 
                 if(peerObject){
                     socket.emit('call-message', {
