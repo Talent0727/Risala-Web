@@ -43,7 +43,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     //Socket Events
     useEffect(() => {
-        console.log(socket.connected)
         if(socket.connected){
 
             socket.on('call-message', (data) => {
@@ -157,13 +156,13 @@ export default function ChatCall({ locale, current, USER_DATA }){
     }, [callSettings.isInCall, callSettings.isActive])
 
     useEffect(() => {
-        console.log(userPeer, peer)
         if((userPeer || peer || userSettings.userPeer) && callSettings.signalData && callSettings.initiator){
-            console.log("Sent")
             if(userPeer){
                 userPeer.signal(callSettings.signalData)
-            } else {
+            } else if(!userPeer && peer) {
                 peer.signal(callSettings.signalData)
+            } else if(!userPeer && !peer && userSettings.userPeer){
+                userSettings.userPeer.signal(callSettings.signalData)
             }
         }
     }, [userPeer, peer, callSettings.signalData])
@@ -266,9 +265,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     userSettings: { isMuted: false },
                 }))
                 if(callSettings.purpose === "video"){
-                    if(peerVideo.current){
-                        peerVideo.current.srcObject = stream
-                    }
+                    peerVideo.current.srcObject = stream
                     dispatch(callSettingReducer({
                         userSettings: { isCam: true },
                         peerSettings: { isPeerCam: true }
