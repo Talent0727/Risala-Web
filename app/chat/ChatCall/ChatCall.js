@@ -386,10 +386,16 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     stream
                 );
             } catch(err){
-                peer.replaceTrack(
-                    stream.getVideoTracks()[0],
-                    stream
-                );
+                try {
+                    var previousStream = stream.getVideoTracks()[0];
+                    peer.replaceTrack(previousStream)
+                } catch(err){
+                    dispatch(chatReducer({
+                        ERROR: {
+                            PURPOSE: "Could not replace video track, please reload the page"
+                        }
+                    }))
+                }
             }
         }
 
