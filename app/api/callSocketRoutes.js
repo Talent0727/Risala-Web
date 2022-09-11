@@ -1,32 +1,32 @@
 import store from "../features/store";
 import { chatReducer } from "../features/chat";
 import { callSettingReducer, callSettingsReset } from "../features/callSettings";
-import { postRequest } from "./api";
 
 const state         =   store.getState().chatReducer.value
 const callSettings  =   store.getState().callSettingReducer
 const USER_DATA     =   state.USER_DATA
-const current       =   state.current
 
 function callInit(data, socket){
     console.log(data, callSettings)
     if(!data.initiator && !callSettings.isActive){
         store.dispatch(callSettingReducer({...data}))
     } else {
+        console.log("Call closed automatic")
         // You are already busy in a call, so perhaps this could be tweaked better
         socket.emit('call-closed', {
-            user: USER_DATA.account_id,
+            id: callSettings.id,
+            user_id: USER_DATA.account_id,
+            name: `${USER_DATA.firstname} ${USER_DATA.lastname}`,
             room: data.joined.filter(e => e.id !== USER_DATA.account_id)
         })
     }
 }
 
-function callClosed(data){
-    if(callSettings.joined.length < 2 || callSettings.members.length === 2){
-        store.dispatch(callSettingsReset())
-    } else {
-        // This is for potential group calls
-    }
+function callJoin(data){
+    store.dispatch(callSettingReducer({
+        signalData: data.signal,
+        joined: [...store.getState().callSettingReducer.joined, data.joined]
+    }))
 }
 
-export { callInit, callClosed }
+export { callInit, callJoin }

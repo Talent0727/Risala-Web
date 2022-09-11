@@ -24,7 +24,7 @@ import { postRequest, errorManagement } from "../api/api";
 
 
 import { socketTyping, socketRemove, socketMessage, socketExit, socketJoin, socketConnect } from "../api/socketRoutes";
-import { callInit, callClosed } from "../api/callSocketRoutes";
+import { callInit, callJoin } from "../api/callSocketRoutes";
 
 export default function Index(){
     const socket = useContext(SocketContext)
@@ -73,7 +73,7 @@ export default function Index(){
 
             //Call routes
             socket.on('call-init', (data) => { callInit(data, socket) })
-            socket.on('call-closed', callClosed)
+            socket.on('call-join', callJoin)
         }
 
         return(() => {

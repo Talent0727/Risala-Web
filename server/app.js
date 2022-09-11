@@ -8,6 +8,7 @@ const socketFunction = require('./socketFunction')
 
 const { createServer } = require("http");
 const { Server } = require("socket.io");
+const { ExpressPeerServer } = require('peer')
 
 
 /***************** Configuration ***************** */
@@ -113,15 +114,11 @@ io.on('connection', (socket) => {
     /*                        CALLS                        */
     /*******************************************************/
     socket.on('call-init', (data) => {
-        console.log(data)
         socket.to(data.room).emit('call-init', data)
-    })
-
-    socket.on('call-rejected', (data) => {
-        socket.to(data.room).emit('call-rejected', data)
     })
     
     socket.on('call-closed', (data) => {
+        console.log(data)
         socket.to(data.room).emit('call-closed', data)
     })
 

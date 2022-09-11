@@ -18,7 +18,9 @@ export default function CallerWindow({ socket }){
 
     function rejectCall(){
         socket.emit('call-closed', {
-            user: USER_DATA.account_id,
+            id: callSettings.id,
+            user_id: USER_DATA.account_id,
+            name: `${USER_DATA.firstname} ${USER_DATA.lastname}`,
             room: callSettings.joined.filter(e => e.id !== USER_DATA.account_id)
         })
         dispatch(callSettingsReset())

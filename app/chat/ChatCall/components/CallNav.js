@@ -4,7 +4,7 @@ import { chatReducer } from "../../../features/chat";
 import { callSettingReducer, callSettingsReset } from "../../../features/callSettings";
 import callMessage from "../../ChatBottom/functions/callMessage";
 
-export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTimer, timeStamp, setTimeStamp, timer, setTimer, socket, stream, peerObject, peer, setIsTimer, userVideo }){
+export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTimer, timeStamp, setTimeStamp, timer, setTimer, socket, stream, peerObject, peer, setIsTimer, setUserPeer }){
     const dispatch = useDispatch();
     const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
@@ -50,20 +50,12 @@ export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTi
             });
         }
 
-        if(callSettings.joined.length >= 2){
-            socket.emit('call-exit', {
-                id: callSettings.id,
-                joined: callSettings.joined,
-                room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id),
-                callSettings: callSettings,
-                timeStamp: timeStamp,
-                initiator: callSettings.initiator
-            })
-        } else if(!callSettings.initiator) {
-            socket.emit('call-closed', {
-                room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id)
-            })
-        }
+        socket.emit('call-closed', {
+            id: callSettings.id,
+            user_id: USER_DATA.account_id,
+            name: `${USER_DATA.firstname} ${USER_DATA.lastname}`,
+            room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id)
+        })
 
         peer = null;
 
@@ -72,7 +64,9 @@ export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTi
         }
 
         dispatch(callSettingsReset())
+        setUserPeer(undefined)
         setIsTimer(false)
+        setTimer(0)
     }
 
     useEffect(() => {

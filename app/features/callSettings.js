@@ -20,7 +20,7 @@ const initialState = {
         isPeerCam: false,
         isPeerPresenting: false,
     },
-    signalData: undefined
+    signalData: null
 }
 
 export const callSettingsSlice = createSlice({

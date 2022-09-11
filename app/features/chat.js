@@ -4,6 +4,7 @@ export const chatSlice = createSlice({
     name: "chat",
     initialState: {
         value: {
+            callSignal: undefined,
             isMobile: false,
             chat: [],
             chats: undefined, 
@@ -24,6 +25,7 @@ export const chatSlice = createSlice({
             },
             emoji: false,
             ERROR: false,
+            MESSAGE: false,
             files: [], //This is for upload purposes only
             isFiles: false,
             uploadFiles: { //This array consists of objects with information crucial for the file & image update

@@ -41,6 +41,86 @@ export default function ChatCall({ locale, current, USER_DATA }){
     const [timer, setTimer] = useState(0)
     const [timeStamp, setTimeStamp] = useState('')
 
+    //Socket Events
+    useEffect(() => {
+        if(socket.connected){
+            socket.on('call-message', (data) => {
+                if(data.purpose === "microphone"){
+                    dispatch(callSettingReducer({
+                        peerSettings: { isPeerMuted: data.enabled }
+                    }))
+                } else if(data.purpose === "camera"){
+                    dispatch(callSettingReducer({
+                        peerSettings: { isPeerCam: data.enabled }
+                    }))
+                } else if(data.purpose === "screen-sharing"){
+                    if(data.isSharing){
+
+                        if(userSettings.isPresenting){
+                            stopScreenShare()
+                        }
+                        dispatch(callSettingReducer({
+                            userSettings: {
+                                isFullScreen: false,
+                                isPresenting: false
+                            },
+                            peerSettings: { isPeerPresenting: true }
+                        }))
+                    } else {
+                        dispatch(callSettingReducer({
+                            peerSettings: { isPeerPresenting: false }
+                        }))
+                    }
+                } else if(data.purpose === "error"){
+                    dispatch(chatReducer({
+                        ERROR: {
+                            PURPOSE: `An error has occurred by your peer: ${err}`
+                        }
+                    }))
+                    console.log('Error Message Triggered')
+                    callTerminated()
+                } else if(data.purpose === "reject"){
+                    console.log("reject triggered")
+                    callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, true)
+                    callTerminated()
+                }
+            })
+            socket.on('call-error', (data) => {
+                console.log('************** Call ERROR *******************')
+                console.log(data)
+                callTerminated()
+            })
+            socket.on('call-closed', (data) => {
+                console.log(data)
+                dispatch(callSettingsReset())
+                dispatch(chatReducer({
+                    ERROR: {
+                        PURPOSE: `Call closed by: ${data.name}`
+                    }
+                }))
+            })
+
+            // Initiated if the Peer ends the call
+            //socket.on('call-exit', (data) => {
+            //    if(data.initiator){
+            //        if(data.joined.length === 1){
+            //            callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, true)
+            //        } else {
+            //            callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, false)
+            //        }
+            //    }
+            //    console.log("Call exit triggered")
+            //    callTerminated()
+            //})
+        }
+
+        return(() => {
+            socket.off('call-message')
+            socket.off('call-error')
+            socket.off('call-closed')
+        })
+    }, [socket.connected])
+
     // Keep this one
     useEffect(() => {
         if(timer === 30){
@@ -59,9 +139,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
     }, [timer, callSettings.joined])
 
     useEffect(() => {
-        if(!callSettings.isActive){
-            callTerminated()
-        }
 
         if(callSettings.joined.length === 2){
             setPeerObject(callSettings.members.filter(e => e.id !== USER_DATA.account_id)[0])
@@ -72,6 +149,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
     }, [callSettings])
 
     // Keep this, solved bugs for volume-meter for peer etc
+    /*
     useEffect(() => {
         if(peerObject && peerStream){
 
@@ -104,6 +182,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             volumeMeterInit(peerStream, volumeMeter, callSettings.purpose)
         }
     }, [peerObject, peerStream])
+    */
 
     useEffect(() => {
         if(callSettings.isInCall && callSettings.isActive){
@@ -112,8 +191,16 @@ export default function ChatCall({ locale, current, USER_DATA }){
     }, [callSettings.isInCall, callSettings.isActive])
 
     useEffect(() => {
-        console.log(userPeer)
-    }, [userPeer])
+        console.log(userPeer, peer)
+        if((userPeer || peer) && callSettings.signalData && callSettings.initiator){
+            console.log("Sent")
+            if(userPeer){
+                userPeer.signal(callSettings.signalData)
+            } else {
+                peer.signal(callSettings.signalData)
+            }
+        }
+    }, [userPeer, peer, callSettings.signalData])
 
     /*************************/
 
@@ -157,13 +244,16 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
             // If you are not the initiator, then send a signal back to the one who sent the signal to
             // begin with in order to "answer" the signal
+            // This is the 2nd signal
             if(!callSettings.initiator){
+                console.log("Second Signal")
                 peer.signal(callSettings.signalData)
             }
 
             peer.on('signal', (signal) => {
                 // The reciever
                 if(!callSettings.initiator){
+                    console.log("Send signal to initator")
                     var callObject = {
                         id: callSettings.id,
                         joined: USER_DATA.account_id,
@@ -184,19 +274,51 @@ export default function ChatCall({ locale, current, USER_DATA }){
             })
 
             // This is correct
+            //peer.on('stream', (stream) => {
+            //    setPeerStream(stream)
+            //    dispatch(callSettingReducer({
+            //        userSettings: { isMuted: false }
+            //    }))
+            //
+            //    if(callSettings.purpose === "video"){
+            //        dispatch(callSettingReducer({
+            //            userSettings: { isCam: true }
+            //        }))
+            //    }
+            //
+            //    setTimer(0)
+            //})
+
+            // This is correct
             peer.on('stream', (stream) => {
+                setTimer(0)
                 setPeerStream(stream)
                 dispatch(callSettingReducer({
                     userSettings: { isMuted: false }
                 }))
-
                 if(callSettings.purpose === "video"){
+                    if(peerVideo.current){
+                        peerVideo.current.srcObject = stream
+                    }
                     dispatch(callSettingReducer({
                         userSettings: { isCam: true }
                     }))
+                } else {
+                    var peerAudioManual = document.querySelector('.peer-audio')
+                    if(peerAudio.current){
+                        peerAudio.current.srcObject = stream
+                    } else if (peerAudioManual) {
+                        peerAudioManual.srcObject = stream
+                    }
                 }
 
-                setTimer(0)
+                if(callSettings.purpose === "video"){
+                    var volumeMeter = document.querySelector('.peer-screen .volume-meter')
+                } else {
+                    var volumeMeter = document.querySelectorAll('.volume-meter')[1]
+                }
+
+                volumeMeterInit(stream, volumeMeter, callSettings.purpose)
             })
 
             // If the call was interrupted
@@ -215,108 +337,43 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 callInterupt(err, timeStamp)
             })
 
-            /**************************************************************/
-            socket.on('call-message', (data) => {
-                if(data.purpose === "microphone"){
-                    dispatch(callSettingReducer({
-                        peerSettings: { isPeerMuted: data.enabled }
-                    }))
-                } else if(data.purpose === "camera"){
-                    dispatch(callSettingReducer({
-                        peerSettings: { isPeerCam: data.enabled }
-                    }))
-                } else if(data.purpose === "screen-sharing"){
-                    if(data.isSharing){
 
-                        if(userSettings.isPresenting){
-                            stopScreenShare()
-                        }
-                        dispatch(callSettingReducer({
-                            userSettings: {
-                                isFullScreen: false,
-                                isPresenting: false
-                            },
-                            peerSettings: { isPeerPresenting: true }
-                        }))
-                    } else {
-                        dispatch(callSettingReducer({
-                            peerSettings: { isPeerPresenting: false }
-                        }))
-                    }
-                } else if(data.purpose === "error"){
-                    dispatch(chatReducer({
-                        ERROR: {
-                            PURPOSE: `An error has occurred by your peer: ${err}`
-                        }
-                    }))
-                    callTerminated()
-                } else if(data.purpose === "reject"){
-                    console.log("reject triggered")
-                    callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, true)
-                    callTerminated()
-                }
-            })
-
-            // Initiated if the Peer ends the call
-            socket.on('call-exit', (data) => {
-                if(data.initiator){
-                    if(data.joined.length === 1){
-                        callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, true)
-                    } else {
-                        callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, false)
-                    }
-                }
-                callTerminated()
-            })
-
-            socket.on('call-join', (data) => {
-                console.log('******* call-join ***********', data)
-                sendSignal(data)
-            })
-            
-            socket.on('call-error', (data) => {
-                console.log('************** Call ERROR *******************')
-                callTerminated()
-            })
-
-
-            function sendSignal(data){
-                console.log(peer, userPeer, data)
-                if(!peer && !userPeer){
-                    setTimeout(() => {
-                        sendSignal(data)
-                    }, 500)
-                } else {
-                    try {
-                        userPeer.signal(data.signal)
-                    } catch(err){
-                        console.log(err)
-                        peer.signal(data.signal)
-                    }
-                    
-                    dispatch(callSettingReducer({
-                        isActive: true,
-                        joined: [...callSettings.joined, data.joined]
-                    }))
-                }
-            }
+            //function sendSignal(data){
+            //    console.log(peer, userPeer, data)
+            //    if(!peer && !userPeer){
+            //        setTimeout(() => {
+            //            sendSignal(data)
+            //        }, 500)
+            //    } else {
+            //        try {
+            //            userPeer.signal(data.signal)
+            //        } catch(err){
+            //            console.log(err)
+            //            peer.signal(data.signal)
+            //        }
+            //        
+            //        dispatch(callSettingReducer({
+            //            joined: [...callSettings.joined, data.joined]
+            //        }))
+            //    }
+            //}
 
             /*************************************************************/
         })
-        .catch((err) => {
-            console.log(err)
-            dispatch(chatReducer({
-                ERROR: {
-                    PURPOSE: err.message
-                }
-            }))
-            socket.emit('call-error', {
-                error: err.message,
-                room: callSettings.members.map(e => e.id)
-            })
-        
-            callTerminated()
-        })
+        //.catch((err) => {
+        //    console.log(err)
+        //    dispatch(chatReducer({
+        //        ERROR: {
+        //            PURPOSE: err.message
+        //        }
+        //    }))
+        //    socket.emit('call-error', {
+        //        error: err.message,
+        //        room: callSettings.members.map(e => e.id)
+        //    })
+        //
+        //    callTerminated()
+        //})
     }
 
     function screenShare(){
@@ -472,7 +529,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                         peerObject={peerObject}
                         peer={peer}
                         setIsTimer={setIsTimer}
-                        userVideo={userVideo}
+                        setUserPeer={setUserPeer}
                     />
                 </div>
             }
@@ -487,12 +544,17 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     function callTerminated(){
         console.log("Call terminated was triggered")
-        if(stream){
-            stream.getTracks().forEach(function(track) {
-                track.stop();
-            });
-        }
-        peer = null;
+        //if(stream){
+        //    stream.getTracks().forEach(function(track) {
+        //        track.stop();
+        //    });
+        //}
+        socket.emit('call-closed', {
+            id: callSettings.id,
+            user_id: USER_DATA.account_id,
+            name: `${USER_DATA.firstname} ${USER_DATA.lastname}`,
+            room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id)
+        })
         dispatch(callSettingsReset())
         setStream(undefined)
         setPeerStream(undefined)
@@ -500,9 +562,11 @@ export default function ChatCall({ locale, current, USER_DATA }){
     }
 
     function callInterupt(err, timer){
-        console.log(timer)
         console.log(err)
-        callMessage(socket, callSettings, timer)
+        if(callSettings.initiator){
+            callMessage(socket, callSettings, timer)
+        }
+        
         socket.emit('call-error', {
             userID: USER_DATA.account_id,
             message: err,
@@ -514,8 +578,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 track.stop();
             });
         }
-        
-        peer = null;
+    
         dispatch(callSettingsReset())
         setStream(undefined)
         setPeerStream(undefined)
