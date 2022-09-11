@@ -276,7 +276,7 @@ export default function Index(){
                     <i className="material-icons">error</i>
                     <span>{ERROR.PURPOSE}</span>
                 </div>
-                <div className={!MESSAGE ? "message-window" : "message-window-appear"}>
+                <div className={!MESSAGE ? "message-window" : "message-window appear"}>
                     <i className="material-icons">info</i>
                     <span>{MESSAGE.PURPOSE}</span>
                 </div>
