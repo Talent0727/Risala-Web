@@ -106,6 +106,7 @@ io.on('connection', (socket) => {
 
     //Join socket
     socket.on('join', (data) => {
+        console.log(data)
         socket.join(data)
     })
 
@@ -113,11 +114,12 @@ io.on('connection', (socket) => {
     /*                        CALLS                        */
     /*******************************************************/
     socket.on('call-init', (data) => {
+        console.log('**** CALL INIT *****', data.room)
         socket.to(data.room).emit('call-init', data)
     })
     
     socket.on('call-closed', (data) => {
-        console.log(data)
+        console.log('Call-closed', data)
         socket.to(data.room).emit('call-closed', data)
     })
 

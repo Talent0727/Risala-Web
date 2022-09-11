@@ -43,7 +43,9 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     //Socket Events
     useEffect(() => {
+        console.log(socket.connected)
         if(socket.connected){
+
             socket.on('call-message', (data) => {
                 if(data.purpose === "microphone"){
                     dispatch(callSettingReducer({
@@ -91,7 +93,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 callTerminated()
             })
             socket.on('call-closed', (data) => {
-                console.log(data)
+                console.log('call-closed recieved', data)
                 dispatch(callSettingsReset())
                 dispatch(chatReducer({
                     MESSAGE: {
@@ -115,9 +117,9 @@ export default function ChatCall({ locale, current, USER_DATA }){
         }
 
         return(() => {
-            socket.off('call-message')
-            socket.off('call-error')
             socket.off('call-closed')
+            socket.off('call-error')
+            socket.off('call-message')
         })
     }, [socket.connected])
 
@@ -148,42 +150,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     }, [callSettings])
 
-    // Keep this, solved bugs for volume-meter for peer etc
-    /*
-    useEffect(() => {
-        if(peerObject && peerStream){
-
-            // For streaming of PeerStream video/call
-            if(callSettings.purpose === "video"){
-                if(peerVideo.current){
-                    peerVideo.current.srcObject = peerStream
-                }
-                dispatch(callSettingReducer({
-                    peerSettings: { isPeerCam: true }
-                }))
-            } else {
-                var peerAudioManual = document.querySelector('.peer-audio')
-                if(peerAudio.current){
-                    peerAudio.current.srcObject = peerStream
-                } else if (peerAudioManual) {
-                    peerAudioManual.srcObject = peerStream
-                }
-            }
-
-            // For volue-meter for peer
-            if(callSettings.purpose === "video"){
-                var volumeMeter = document.querySelector('.peer-screen .volume-meter')
-            } else {
-                var volumeMeter = document.querySelectorAll('.volume-meter')[1]
-            }
-
-            console.log(volumeMeter)
-
-            volumeMeterInit(peerStream, volumeMeter, callSettings.purpose)
-        }
-    }, [peerObject, peerStream])
-    */
-
     useEffect(() => {
         if(callSettings.isInCall && callSettings.isActive){
             initWebRTC()
@@ -192,7 +158,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     useEffect(() => {
         console.log(userPeer, peer)
-        if((userPeer || peer) && callSettings.signalData && callSettings.initiator){
+        if((userPeer || peer || userSettings.userPeer) && callSettings.signalData && callSettings.initiator){
             console.log("Sent")
             if(userPeer){
                 userPeer.signal(callSettings.signalData)
@@ -216,11 +182,28 @@ export default function ChatCall({ locale, current, USER_DATA }){
         })
         .then((stream) => {
             setStream(stream)
+            peer = new Peer({
+                initiator: callSettings.initiator,
+                trickle: false,
+                stream: stream
+            })
+
+            setUserPeer(peer)
+            dispatch(callSettingReducer({
+                userSettings: {
+                    userPeer: peer
+                }
+            }))
 
             if(callSettings.purpose === "video"){
                 dispatch(callSettingReducer({ userSettings: { isCam: true }}))
                 if(userVideo.current){
-                    userVideo.current.srcObject = stream
+                    try {
+                        userVideo.current.srcObject = userSettings.stream
+                    } catch(err){
+                        console.log(err)
+                        userVideo.current.srcObject = stream
+                    }
                 } else {
                     document.querySelector('.user-video').srcObject = stream
                 }
@@ -234,26 +217,16 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
             volumeMeterInit(stream, volumeMeter, callSettings.purpose)
 
-            peer = new Peer({
-                initiator: callSettings.initiator,
-                trickle: false,
-                stream: stream
-            })
-
-            setUserPeer(peer)
-
             // If you are not the initiator, then send a signal back to the one who sent the signal to
             // begin with in order to "answer" the signal
             // This is the 2nd signal
             if(!callSettings.initiator){
-                console.log("Second Signal")
                 peer.signal(callSettings.signalData)
             }
 
             peer.on('signal', (signal) => {
                 // The reciever
                 if(!callSettings.initiator){
-                    console.log("Send signal to initator")
                     var callObject = {
                         id: callSettings.id,
                         joined: USER_DATA.account_id,
@@ -272,6 +245,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     socket.emit('call-init', callObject) // The first "signal" is sent here
                 }
             })
+
 
             // This is correct
             //peer.on('stream', (stream) => {
@@ -294,7 +268,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 setTimer(0)
                 setPeerStream(stream)
                 dispatch(callSettingReducer({
-                    userSettings: { isMuted: false }
+                    userSettings: { isMuted: false },
                 }))
                 if(callSettings.purpose === "video"){
                     if(peerVideo.current){
@@ -418,6 +392,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
         });
 
         userVideo.current.srcObject = stream
+        
 
         dispatch(callSettingReducer({
             userSettings: {

@@ -5082,10 +5082,10 @@ a:active {
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: #e62b2b;
+  background-color: #2c2c2c;
   padding: 12px 22px;
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.7019607843);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   width: 350px;
 }
 .message-window.appear {
@@ -5108,7 +5108,7 @@ a:active {
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: #141414;
+  background-color: #e62b2b;
   padding: 12px 22px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.7019607843);

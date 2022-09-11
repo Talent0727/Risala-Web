@@ -11,6 +11,7 @@ function callInit(data, socket){
     if(!data.initiator && !callSettings.isActive){
         store.dispatch(callSettingReducer({...data}))
     } else {
+        console.log(callSettings)
         console.log("Call closed automatic")
         // You are already busy in a call, so perhaps this could be tweaked better
         socket.emit('call-closed', {
@@ -23,6 +24,7 @@ function callInit(data, socket){
 }
 
 function callJoin(data){
+    console.log(data)
     store.dispatch(callSettingReducer({
         signalData: data.signal,
         joined: [...store.getState().callSettingReducer.joined, data.joined]

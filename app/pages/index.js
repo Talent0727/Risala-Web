@@ -77,7 +77,10 @@ export default function Index(){
             socket.on('group-join', socketJoin)
 
             //Call routes
-            socket.on('call-init', (data) => { callInit(data, socket) })
+            socket.on('call-init', (data) => { 
+                console.log(data)
+                callInit(data, socket) 
+            })
             socket.on('call-join', callJoin)
         }
 
@@ -270,8 +273,8 @@ export default function Index(){
                 />
                 <ChatImageCarousel />
                 <div 
-                    className={ERROR === false ? "error-window" : "error-window appear"}
-                    style={{top: MESSAGE ? `${(document.querySelector('.message-window').offsetHeight + 10) + document.querySelector('.error-window').offsetHeight}px` : null}}
+                    className={!ERROR ? "error-window" : "error-window appear"}
+                    style={{top: (MESSAGE && ERROR) ? `${(document.querySelector('.message-window').offsetHeight + 10) + document.querySelector('.error-window').offsetHeight}px` : null}}
                 >
                     <i className="material-icons">error</i>
                     <span>{ERROR.PURPOSE}</span>
