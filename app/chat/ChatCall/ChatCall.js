@@ -48,11 +48,11 @@ export default function ChatCall({ locale, current, USER_DATA }){
             socket.on('call-message', (data) => {
                 if(data.purpose === "microphone"){
                     dispatch(callSettingReducer({
-                        peerSettings: { isPeerMuted: data.enabled }
+                        peerSettings: { isMuted: data.enabled }
                     }))
                 } else if(data.purpose === "camera"){
                     dispatch(callSettingReducer({
-                        peerSettings: { isPeerCam: data.enabled }
+                        peerSettings: { isCam: data.enabled }
                     }))
                 } else if(data.purpose === "screen-sharing"){
                     if(data.isSharing){
@@ -65,11 +65,11 @@ export default function ChatCall({ locale, current, USER_DATA }){
                                 isFullScreen: false,
                                 isPresenting: false
                             },
-                            peerSettings: { isPeerPresenting: true }
+                            peerSettings: { isPresenting: true }
                         }))
                     } else {
                         dispatch(callSettingReducer({
-                            peerSettings: { isPeerPresenting: false }
+                            peerSettings: { isPresenting: false }
                         }))
                     }
                 } else if(data.purpose === "error"){
@@ -256,7 +256,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     peerVideo.current.srcObject = stream
                     dispatch(callSettingReducer({
                         userSettings: { isCam: true },
-                        peerSettings: { isPeerCam: true }
+                        peerSettings: { isCam: true }
                     }))
                 } else {
                     var peerAudioManual = document.querySelector('.peer-audio')
@@ -266,7 +266,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                         peerAudioManual.srcObject = stream
                     }
                     dispatch(callSettingReducer({
-                        peerSettings: { isPeerMuted: false }
+                        peerSettings: { isMuted: false }
                     }))
                 }
 
@@ -369,7 +369,8 @@ export default function ChatCall({ locale, current, USER_DATA }){
             }))
             userVideo.current.srcObject = screenStream
 
-            screenStream.getTracks()[0].onended = () => {
+            screenStream.getTracks()[0].onended = (screenCastStream) => {
+                console.log(screenStream)
                 stopScreenShare()
             };
         })
@@ -377,12 +378,17 @@ export default function ChatCall({ locale, current, USER_DATA }){
     
 
     function stopScreenShare(){
-        screenCastStream.getVideoTracks().forEach(function (track) {
-            track.stop();
-        });
+        if(screenCastStream){
+            screenCastStream.getVideoTracks().forEach(function (track) {
+                track.stop();
+            });
+        }
 
-        userVideo.current.srcObject = stream
-        
+        try {
+            userVideo.current.srcObject = stream
+        } catch(err){
+            console.error(err)
+        }
 
         dispatch(callSettingReducer({
             userSettings: {

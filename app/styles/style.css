@@ -7650,6 +7650,12 @@ a:active {
   height: 100vh;
   background-color: #000;
 }
+.call-window .call-window-main {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
 .call-window .call-window-main .video .presentation-information-nav {
   display: flex;
   flex-direction: row;
@@ -7673,12 +7679,43 @@ a:active {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100vw;
-  height: 100vh;
+  position: absolute;
+  top: 60px;
+  left: 20px;
+  width: calc(100% - 40px);
+  height: calc(100% - 360px);
   overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.7019607843);
 }
 .call-window .call-window-main .video .full-screen .video-wrapper .volume-meter {
-  top: 60px;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
+}
+.call-window .call-window-main .video .full-screen .video-wrapper span {
+  position: absolute;
+  z-index: 20;
+  bottom: 10px;
+  left: 20px;
+  font-weight: 600;
+}
+.call-window .call-window-main .video .full-screen .video-wrapper .fullscreen-button {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  border-radius: 50%;
+  padding: 4px;
+  background-color: #141414;
+  z-index: 20;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+}
+.call-window .call-window-main .video .full-screen .video-wrapper .fullscreen-button:hover {
+  cursor: pointer;
+  opacity: 0.8;
 }
 .call-window .call-window-main .video .full-screen video {
   width: 100%;
@@ -7690,8 +7727,7 @@ a:active {
   -o-object-fit: contain;
      object-fit: contain;
   position: absolute;
-  top: 60px;
-  height: calc(100vh - 360px);
+  height: 100%;
 }
 .call-window .call-window-main .video .small-screen {
   display: flex;
@@ -7733,6 +7769,13 @@ a:active {
   position: relative;
   height: 100%;
   width: 100%;
+}
+.call-window .call-window-main .video .video-wrapper span {
+  position: absolute;
+  z-index: 20;
+  bottom: 10px;
+  left: 20px;
+  font-weight: 600;
 }
 .call-window .call-window-main .video .video-wrapper .volume-meter {
   width: 40px;

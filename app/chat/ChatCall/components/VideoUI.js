@@ -1,3 +1,4 @@
+import React, { useState, usState } from "react"
 import { callSettingReducer } from "../../../features/callSettings"
 import { chatReducer } from "../../../features/chat"
 import { useSelector } from "react-redux"
@@ -8,10 +9,18 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
     const peerSettings = useSelector((state) => state.callSettingReducer.peerSettings)
 
+    // This is if you put the presenter in fullscreen.
+    // Do not confuse with the other fullscreen setting which is who has the larger screen
+    const [fullScreen, setFullScreen] = useState(false) 
+
+    const fullScreenStyle = {
+        
+    }
+
     return(
         <div className="single-call video">
             {
-                (userSettings.isPresenting || peerSettings.isPeerPresenting) &&
+                (userSettings.isPresenting || peerSettings.isPresenting) &&
                 <div className="presentation-information-nav">
                     {
                         userSettings.isPresenting &&
@@ -26,7 +35,7 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
 
                     }
                     {
-                        peerSettings.isPeerPresenting &&
+                        peerSettings.isPresenting &&
                         <>
                             <figure>
                                 <img src={ peerObject.profile_picture ? peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
@@ -38,24 +47,24 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                     }
                 </div>
             }
-            <div className={ ((!userSettings.isFullScreen || peerSettings.isPeerPresenting) && !userSettings.isPresenting) ? "peer-screen full-screen" : "peer-screen small-screen" }>
+            <div className={ ((!userSettings.isFullScreen || peerSettings.isPresenting) && !userSettings.isPresenting) ? "peer-screen full-screen" : "peer-screen small-screen" }>
                 {
-                    (!peerSettings.isPeerCam && peerObject && !peerSettings.isPeerPresenting) &&
+                    (!peerSettings.isCam && peerObject && !peerSettings.isPresenting) &&
                     <figure>
                         <img src={ peerObject.profile_picture ? peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
                     </figure>
                 }
                 <div className="video-wrapper">
                     <div
-                        className={!peerSettings.isPeerMuted ? "volume-meter" : "volume-meter muted"}
-                        style={{backgroundColor: peerSettings.isPeerMuted ? '#e62b2b' : null}}
+                        className={!peerSettings.isMuted ? "volume-meter" : "volume-meter muted"}
+                        style={{backgroundColor: peerSettings.isMuted ? '#e62b2b' : null}}
                     >
                         {
-                            peerSettings.isPeerMuted &&
+                            peerSettings.isMuted &&
                             <i className="material-icons">mic_off</i>
                         }
                         {
-                            !peerSettings.isPeerMuted &&
+                            !peerSettings.isMuted &&
                             <>
                                 <div className="volume-mark-1"></div>
                                 <div className="volume-mark-2"></div>
@@ -63,8 +72,16 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                             </>
                         }
                     </div>
+                    {
+                        peerObject &&
+                        <span>{`${peerObject.firstname} ${peerObject.lastname}`}</span>
+                    }
+                    {
+                        peerSettings.isPresenting &&
+                        <i className="material-icons fullscreen-button">fullscreen</i>
+                    }
                     <video
-                        className={peerSettings.isPeerPresenting ? "peer-video presenting" : "peer-video" }
+                        className={peerSettings.isPresenting ? "peer-video presenting" : "peer-video" }
                         autoPlay
                         playsInline
                         ref={peerVideo}
@@ -72,7 +89,7 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                     </video>
                 </div>
             </div>
-            <div className={ ((userSettings.isFullScreen || userSettings.isPresenting) && !peerSettings.isPeerPresenting) ? "user-window full-screen" : "user-window small-screen" }>
+            <div className={ ((userSettings.isFullScreen || userSettings.isPresenting) && !peerSettings.isPresenting) ? "user-window full-screen" : "user-window small-screen" }>
                 {
                     !userSettings.isCam && !userSettings.isPresenting &&
                     <figure>
@@ -98,6 +115,7 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                                 </>
                             }
                         </div>
+                        <span>{`${USER_DATA.firstname} ${USER_DATA.lastname}`}</span>
                         <video
                             className={userSettings.isPresenting ? "user-video presenting" : "user-video" }
                             autoPlay

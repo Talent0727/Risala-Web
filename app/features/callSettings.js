@@ -17,11 +17,16 @@ const initialState = {
         userPeer: undefined
     },
     peerSettings: {
-        isPeerMuted: false,
-        isPeerCam: false,
-        isPeerPresenting: false,
+        isCam: false,
+        isMuted: false,
+        isPresenting: false,
     },
     screenCastStream: undefined,
+    signalData: {
+        initSignal: undefined,
+        secondSignal: undefined,
+        thirdSignal: undefined
+    },
     signalData: null
 }
 

@@ -10,6 +10,7 @@
     background-color: $black;
 
     .call-window-main{
+        user-select: none;
         .video{
             .presentation-information-nav{
                 display: flex;
@@ -34,12 +35,40 @@
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                width: 100vw;
-                height: 100vh;
+                position: absolute;
+                top: 60px;
+                left: 20px;
+                width: calc(100% - 40px);
+                height: calc(100% - 360px);
                 overflow: hidden;
+                border-radius: 6px;
+                border: 1px solid $white-1;
                 .video-wrapper{
                     .volume-meter{
-                        top: 60px;
+                        top: 20px;
+                        right: 20px;
+                        z-index: 10;
+                    }
+                    span{
+                        position: absolute;
+                        z-index: 20;
+                        bottom: 10px;
+                        left: 20px;
+                        font-weight: 600;
+                    }
+                    .fullscreen-button{
+                        position: absolute;
+                        bottom: 10px;
+                        right: 10px;
+                        border-radius: 50%;
+                        padding: 4px;
+                        background-color: $black-1;
+                        z-index: 20;
+                        user-select: none;
+                        &:hover{
+                            cursor: pointer;
+                            opacity: 0.8;
+                        }
                     }
                 }
                 video{
@@ -49,8 +78,7 @@
                     &.presenting{
                         object-fit: contain;
                         position: absolute;
-                        top: 60px;
-                        height: calc(100vh - 360px);
+                        height: 100%;
                     }
                 }
             }
@@ -93,6 +121,13 @@
                 position: relative;
                 height: 100%;
                 width: 100%;
+                span{
+                    position: absolute;
+                    z-index: 20;
+                    bottom: 10px;
+                    left: 20px;
+                    font-weight: 600;
+                }
                 .volume-meter{
                     width: 40px;
                     height: 40px;
