@@ -301,7 +301,8 @@ export default function ChatCall({ locale, current, USER_DATA }){
                         peerVideo.current.srcObject = stream
                     }
                     dispatch(callSettingReducer({
-                        userSettings: { isCam: true }
+                        userSettings: { isCam: true },
+                        peerSettings: { isPeerCam: true }
                     }))
                 } else {
                     var peerAudioManual = document.querySelector('.peer-audio')
@@ -310,6 +311,9 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     } else if (peerAudioManual) {
                         peerAudioManual.srcObject = stream
                     }
+                    dispatch(callSettingReducer({
+                        peerSettings: { isPeerMuted: false }
+                    }))
                 }
 
                 if(callSettings.purpose === "video"){
@@ -336,27 +340,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 }))
                 callInterupt(err, timeStamp)
             })
-
-
-            //function sendSignal(data){
-            //    console.log(peer, userPeer, data)
-            //    if(!peer && !userPeer){
-            //        setTimeout(() => {
-            //            sendSignal(data)
-            //        }, 500)
-            //    } else {
-            //        try {
-            //            userPeer.signal(data.signal)
-            //        } catch(err){
-            //            console.log(err)
-            //            peer.signal(data.signal)
-            //        }
-            //        
-            //        dispatch(callSettingReducer({
-            //            joined: [...callSettings.joined, data.joined]
-            //        }))
-            //    }
-            //}
 
             /*************************************************************/
         })
@@ -544,11 +527,11 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     function callTerminated(){
         console.log("Call terminated was triggered")
-        //if(stream){
-        //    stream.getTracks().forEach(function(track) {
-        //        track.stop();
-        //    });
-        //}
+        if(stream){
+            stream.getTracks().forEach(function(track) {
+                track.stop();
+            });
+        }
         socket.emit('call-closed', {
             id: callSettings.id,
             user_id: USER_DATA.account_id,
@@ -574,7 +557,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
         })
 
         if(stream){
-            stream.getTracks().forEach(function(track) {
+            stream.getTracks().forEach((track) => {
                 track.stop();
             });
         }
