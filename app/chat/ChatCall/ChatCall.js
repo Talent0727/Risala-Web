@@ -337,6 +337,15 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     screenStream.getVideoTracks()[0],
                     stream
                 );
+                
+                //Emit event
+                if(peerObject){
+                    socket.emit('call-message', {
+                        purpose: 'screen-sharing',
+                        isSharing: true,
+                        room: peerObject.id
+                    })
+                }
             }
 
             setScreenCastStream(screenStream)
@@ -351,15 +360,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 stopScreenShare()
             };
         })
-
-        //Emit event
-        if(peerObject){
-            socket.emit('call-message', {
-                purpose: 'screen-sharing',
-                isSharing: true,
-                room: peerObject.id
-            })
-        }
     }
     
 
