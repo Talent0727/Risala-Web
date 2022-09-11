@@ -11,6 +11,23 @@
 
     .call-window-main{
         .video{
+            .presentation-information-nav{
+                display: flex;
+                flex-direction: row;
+                position: absolute;
+                top: 6px;
+                left: 20px;
+                width: calc(100% - 56px);
+                background-color: $black-2;
+                height: 30px;
+                align-items: center;
+                padding: 8px;
+                border-radius: 6px;
+                figure{
+                    width: 30px;
+                    height: 30px;
+                }
+            }
             .full-screen{
                 display: flex;
                 justify-content: center;
@@ -20,7 +37,7 @@
                 overflow: hidden;
                 .video-wrapper{
                     .volume-meter{
-                        top: 20px;
+                        top: 60px;
                     }
                 }
                 video{

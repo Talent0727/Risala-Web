@@ -7616,6 +7616,23 @@ a:active {
   height: 100vh;
   background-color: #000;
 }
+.call-window .call-window-main .video .presentation-information-nav {
+  display: flex;
+  flex-direction: row;
+  position: absolute;
+  top: 6px;
+  left: 20px;
+  width: calc(100% - 56px);
+  background-color: hsla(0deg, 0%, 100%, 0.1);
+  height: 30px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 6px;
+}
+.call-window .call-window-main .video .presentation-information-nav figure {
+  width: 30px;
+  height: 30px;
+}
 .call-window .call-window-main .video .full-screen {
   display: flex;
   justify-content: center;
@@ -7625,7 +7642,7 @@ a:active {
   overflow: hidden;
 }
 .call-window .call-window-main .video .full-screen .video-wrapper .volume-meter {
-  top: 20px;
+  top: 60px;
 }
 .call-window .call-window-main .video .full-screen video {
   width: 100%;
