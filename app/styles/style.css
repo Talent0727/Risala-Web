@@ -5074,109 +5074,6 @@ a:active {
   margin: 10px auto;
 }
 
-.message-window {
-  top: -10%;
-  z-index: 1000;
-  left: calc(50% - 175px);
-  position: fixed;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  background-color: #2c2c2c;
-  padding: 12px 22px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  width: 350px;
-}
-.message-window.appear {
-  -webkit-animation: message 300ms ease forwards;
-          animation: message 300ms ease forwards;
-}
-.message-window:not(.appear) {
-  -webkit-animation: error2 300ms ease forwards;
-          animation: error2 300ms ease forwards;
-}
-.message-window i {
-  margin-right: 10px;
-}
-.message-window span {
-  font-size: 14px;
-  color: #f4f4f4;
-}
-
-.error-window {
-  top: -10%;
-  z-index: 1000;
-  left: calc(50% - 175px);
-  position: fixed;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  background-color: #e62b2b;
-  padding: 12px 22px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.7019607843);
-  width: 350px;
-}
-.error-window.appear {
-  -webkit-animation: error 300ms ease forwards;
-          animation: error 300ms ease forwards;
-}
-.error-window:not(.appear) {
-  -webkit-animation: error2 300ms ease forwards;
-          animation: error2 300ms ease forwards;
-}
-.error-window i {
-  margin-right: 10px;
-}
-.error-window span {
-  font-size: 14px;
-  color: #f4f4f4;
-}
-
-@-webkit-keyframes message {
-  from {
-    top: -10%;
-  }
-  to {
-    top: 10%;
-  }
-}
-
-@keyframes message {
-  from {
-    top: -10%;
-  }
-  to {
-    top: 10%;
-  }
-}
-@-webkit-keyframes error {
-  from {
-    top: -10%;
-  }
-  to {
-    top: 5%;
-  }
-}
-@keyframes error {
-  from {
-    top: -10%;
-  }
-  to {
-    top: 5%;
-  }
-}
-@-webkit-keyframes error2 {
-  to {
-    top: -10%;
-  }
-}
-@keyframes error2 {
-  to {
-    top: -10%;
-  }
-}
 @-webkit-keyframes wave {
   0% {
     transform: initial;
@@ -5212,6 +5109,7 @@ a:active {
     transform: initial;
   }
 }
+
 @keyframes wave {
   0% {
     transform: initial;
@@ -8072,4 +7970,113 @@ a:active {
 }
 .caller-window .button-options .button:nth-last-child(1) i {
   background-color: rgb(24, 159, 42);
+}
+
+.message-information-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  position: absolute;
+  top: 10px;
+  left: calc(50% - 200px);
+  width: 400px;
+  min-height: 150px;
+  max-height: 40vh;
+  overflow-y: auto;
+  z-index: 1000;
+}
+.message-information-wrapper .error-window {
+  background-color: #e62b2b;
+}
+.message-information-wrapper .error-window.appear {
+  -webkit-animation: error 300ms ease forwards;
+          animation: error 300ms ease forwards;
+}
+.message-information-wrapper .error-window:not(.appear) {
+  -webkit-animation: error2 300ms ease forwards;
+          animation: error2 300ms ease forwards;
+}
+.message-information-wrapper .message-window, .message-information-wrapper .error-window {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 12px 22px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.7019607843);
+  width: 350px;
+  margin-bottom: 10px;
+}
+.message-information-wrapper .message-window i, .message-information-wrapper .error-window i {
+  margin-right: 10px;
+}
+.message-information-wrapper .message-window span, .message-information-wrapper .error-window span {
+  font-size: 14px;
+  color: #f4f4f4;
+}
+.message-information-wrapper .message-window {
+  background-color: #2c2c2c;
+}
+.message-information-wrapper .message-window.appear {
+  -webkit-animation: message 300ms ease forwards;
+          animation: message 300ms ease forwards;
+}
+.message-information-wrapper .message-window:not(.appear) {
+  -webkit-animation: error2 300ms ease forwards;
+          animation: error2 300ms ease forwards;
+}
+
+@-webkit-keyframes message {
+  from {
+    top: -10%;
+  }
+  to {
+    top: 10%;
+  }
+}
+
+@keyframes message {
+  from {
+    top: -10%;
+  }
+  to {
+    top: 10%;
+  }
+}
+@-webkit-keyframes error {
+  from {
+    top: -10%;
+  }
+  to {
+    top: 5%;
+  }
+}
+@keyframes error {
+  from {
+    top: -10%;
+  }
+  to {
+    top: 5%;
+  }
+}
+@-webkit-keyframes error2 {
+  to {
+    top: -10%;
+  }
+}
+@keyframes error2 {
+  to {
+    top: -10%;
+  }
+}
+@-webkit-keyframes dissapear {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes dissapear {
+  to {
+    opacity: 0;
+  }
 }/*# sourceMappingURL=style.css.map */

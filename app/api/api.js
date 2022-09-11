@@ -47,7 +47,7 @@ export function getRequest(URL){
 
 export function errorManagement(payload){
     const state = store.getState().chatReducer.value
-    const ERROR = state.ERROR
+    const MESSAGES = state.MESSAGES
 
     return new Promise((resolve, reject) => {
         let url;
@@ -61,11 +61,10 @@ export function errorManagement(payload){
             })
             .then((response) => {
                 if(response.status === 200){
-                    store.dispatch(chatReducer({ ERROR: { PURPOSE: payload.message } }))
+                    store.dispatch(chatReducer({ 
+                        MESSAGES: [...MESSAGES, { purpose: 'error', message: payload.message }]
+                    }))
                     resolve(true)
-                    setTimeout(() => {
-                        store.dispatch(chatReducer({ERROR: false}))
-                    }, 6000)
                 }
             })
             .catch((err) => {

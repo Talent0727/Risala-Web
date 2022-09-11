@@ -11,7 +11,7 @@ function socketMessage(data){
     const chat_settings = state.chat_settings
     const current = state.current
     const USER_DATA = state.USER_DATA
-    const ERROR = state.ERROR
+    const MESSAGES = state.MESSAGES
 
     console.log(data)
 

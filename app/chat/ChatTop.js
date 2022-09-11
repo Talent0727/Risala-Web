@@ -12,7 +12,7 @@ export default function  ChatTop({setWidth, socket}){
     const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
     const COUNTER_DATA = useSelector((state) => state.chatReducer.value.COUNTER_DATA)
     const settings = useSelector((state) => state.chatReducer.value.settings)
-    const ERROR = useSelector((state) => state.chatReducer.value.ERROR)
+    const MESSAGES = useSelector((state) => state.chatReducer.value.MESSAGES)
     const chat = useSelector((state) => state.chatReducer.value.chat)
     const chats = useSelector((state) => state.chatReducer.value.chats)
     const callSettings = useSelector((state) => state.chatReducer.value.callSettings)
@@ -370,9 +370,7 @@ export default function  ChatTop({setWidth, socket}){
             })
             .catch((err) => {
                 dispatch(chatReducer({
-                    ERROR: {
-                        PURPOSE: err.message
-                    }
+                    MESSAGES: [...MESSAGES, {purpose: 'error', message: err.message}]
                 }))
                 errorManagement(err)
                 console.log(err)

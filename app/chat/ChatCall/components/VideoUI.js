@@ -14,7 +14,13 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
     const [fullScreen, setFullScreen] = useState(false) 
 
     const fullScreenStyle = {
-        
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: '#000',
+        zIndex: 20,
+        border: 'none'
     }
 
     return(
@@ -47,7 +53,10 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                     }
                 </div>
             }
-            <div className={ ((!userSettings.isFullScreen || peerSettings.isPresenting) && !userSettings.isPresenting) ? "peer-screen full-screen" : "peer-screen small-screen" }>
+            <div 
+                className={ ((!userSettings.isFullScreen || peerSettings.isPresenting) && !userSettings.isPresenting) ? "peer-screen full-screen" : "peer-screen small-screen" }
+                style={ fullScreen ? fullScreenStyle : null }
+            >
                 {
                     (!peerSettings.isCam && peerObject && !peerSettings.isPresenting) &&
                     <figure>
@@ -78,7 +87,13 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                     }
                     {
                         peerSettings.isPresenting &&
-                        <i className="material-icons fullscreen-button">fullscreen</i>
+                        <i 
+                            className="material-icons fullscreen-button"
+                            onClick={(() => { setFullScreen(!fullScreen)})}
+                            style={fullScreen ? {background: '#e62b2b'} : null}
+                        >
+                            {fullScreen ? "fullscreen_exit" : "fullscreen"}
+                        </i>
                     }
                     <video
                         className={peerSettings.isPresenting ? "peer-video presenting" : "peer-video" }

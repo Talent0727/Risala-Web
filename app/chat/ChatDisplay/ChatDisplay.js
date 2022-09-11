@@ -153,9 +153,7 @@ export default function ChatDisplay({current, inputRef, chat, locale, USER_DATA}
             })
             .catch((err) => {
                 dispatch(chatReducer({
-                    ERROR: {
-                        PURPOSE: "An error has occured with fetching messages, please reload the page"
-                    }
+                    MESSAGES: [...MESSAGES, {purpose: 'error', message: "An error has occured with fetching messages, please reload the page"}],
                 }))
                 console.log(err)
             })

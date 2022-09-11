@@ -1,0 +1,79 @@
+.message-information-wrapper{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    position: absolute;
+    top: 10px;
+    left: calc(50% - (400px / 2));
+    width: 400px;
+    min-height: 150px;
+    max-height: 40vh;
+    overflow-y: auto;
+    z-index: 1000;
+
+    .error-window{
+        background-color: $red;
+        &.appear{
+            animation: error 300ms ease forwards;
+        }
+        &:not(.appear){
+            animation: error2 300ms ease forwards;
+        }
+    }
+
+    .message-window, .error-window{
+        position: relative;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        padding: 12px 22px;
+        border-radius: 6px;
+        border: 1px solid $white-1;
+        width: 350px;
+        margin-bottom: 10px;
+        i{
+            margin-right: 10px;
+        }
+        span{
+            font-size: 14px;
+            color: $white;
+        }
+    }
+
+    .message-window{
+        background-color: $black-3;
+        &.appear{
+            animation: message 300ms ease forwards;
+        }
+        &:not(.appear){
+            animation: error2 300ms ease forwards;
+        }
+    }
+}
+
+@keyframes message {
+    from {
+        top: -10%;
+    } to {
+        top: 10%;
+    }
+}
+@keyframes error {
+    from {
+        top: -10%;
+    } to {
+        top: 5%;
+    }
+}
+@keyframes error2 {
+    to {
+        top: -10%;
+    }
+}
+
+@keyframes dissapear{
+    to {
+        opacity: 0;
+    }
+}

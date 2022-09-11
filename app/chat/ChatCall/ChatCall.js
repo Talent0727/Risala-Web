@@ -74,9 +74,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     }
                 } else if(data.purpose === "error"){
                     dispatch(chatReducer({
-                        ERROR: {
-                            PURPOSE: `An error has occurred by your peer: ${err}`
-                        }
+                        MESSAGS: [...MESSAGES, {purpose: 'error', message: `An error has occurred by your peer: ${err}`}],
                     }))
                     console.log('Error Message Triggered')
                     callTerminated()
@@ -89,9 +87,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             socket.on('call-error', (data) => {
                 console.log('************** Call ERROR *******************')
                 dispatch(chatReducer({
-                    ERROR: {
-                        PURPOSE: `An error occured by your peer: ${data.error}`
-                    }
+                    MESSAGS: [...MESSAGES, {purpose: 'error', message: `An error occured by your peer: ${data.error}`}],
                 }))
                 callTerminated()
             })
@@ -305,9 +301,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             peer.on('error', (err) => {
                 console.log(err)
                 dispatch(chatReducer({
-                    ERROR: {
-                        PURPOSE: err.message ? err.message : err
-                    }
+                    MESSAGES: [...MESSAGES, {purpose: 'error', message: err.message ? err.message : err}],
                 }))
                 callInterupt(err, timeStamp)
             })
@@ -324,9 +318,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 } catch(err){
                     console.log(err)
                     dispatch(chatReducer({
-                        ERROR: {
-                            PURPOSE: err.message
-                        }
+                        MESSAGES: [...MESSAGES, {purpose: 'error', message: err.message}],
                     }))
         
                     socket.emit('call-error', {
@@ -410,9 +402,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     peer.replaceTrack(previousStream)
                 } catch(err){
                     dispatch(chatReducer({
-                        ERROR: {
-                            PURPOSE: "Could not replace video track, please reload the page"
-                        }
+                        MESSAGES: [...MESSAGES, {purpose: 'error', message: "Could not replace video track, please reload the page"}],
                     }))
                 }
             }

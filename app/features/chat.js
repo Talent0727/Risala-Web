@@ -24,8 +24,7 @@ export const chatSlice = createSlice({
                 profile_picture: undefined
             },
             emoji: false,
-            ERROR: false,
-            MESSAGE: false,
+            MESSAGES: [],
             files: [], //This is for upload purposes only
             isFiles: false,
             uploadFiles: { //This array consists of objects with information crucial for the file & image update

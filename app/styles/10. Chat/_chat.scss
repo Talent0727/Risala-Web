@@ -255,82 +255,6 @@
     }
 }
 
-//Error window
-.message-window{
-    top: -10%;
-    z-index: 1000;
-    left: calc(50% - (350px / 2));
-    position: fixed;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    background-color: $black-3;
-    padding: 12px 22px;
-    border-radius: 6px;
-    border: 1px solid $white-2;
-    width: 350px;
-    &.appear{
-        animation: message 300ms ease forwards;
-    }
-    &:not(.appear){
-        animation: error2 300ms ease forwards;
-    }
-    i{
-        margin-right: 10px;
-    }
-    span{
-        font-size: 14px;
-        color: $white;
-    }
-}
-
-.error-window{
-    top: -10%;
-    z-index: 1000;
-    left: calc(50% - (350px / 2));
-    position: fixed;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    background-color: $red;
-    padding: 12px 22px;
-    border-radius: 6px;
-    border: 1px solid $white-1;
-    width: 350px;
-    &.appear{
-        animation: error 300ms ease forwards;
-    }
-    &:not(.appear){
-        animation: error2 300ms ease forwards;
-    }
-    i{
-        margin-right: 10px;
-    }
-    span{
-        font-size: 14px;
-        color: $white;
-    }
-}
-@keyframes message {
-    from {
-        top: -10%;
-    } to {
-        top: 10%;
-    }
-}
-@keyframes error {
-    from {
-        top: -10%;
-    } to {
-        top: 5%;
-    }
-}
-@keyframes error2 {
-    to {
-        top: -10%;
-    }
-}
-
 
 @keyframes wave {
     0%{
@@ -375,3 +299,4 @@
 @import './chatPopUp';
 @import './chatSettings';
 @import './chatCallWindow';
+@import './messageWindow';

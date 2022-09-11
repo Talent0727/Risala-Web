@@ -24,7 +24,7 @@ export default function ChatWindow({socket, locale}){
     const moreOptions = useSelector((state) => state.chatReducer.value.moreOptions)
     const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
     const COUNTER_DATA = useSelector((state) => state.chatReducer.value.COUNTER_DATA)
-    const ERROR = useSelector((state) => state.chatReducer.value.ERROR)
+    const MESSAGES = useSelector((state) => state.chatReducer.value.MESSAGES)
     const chat = useSelector((state) => state.chatReducer.value.chat)
     const chats = useSelector((state) => state.chatReducer.value.chats)
     const filesAndMedia = useSelector((state) => state.chatReducer.value.filesAndMedia)

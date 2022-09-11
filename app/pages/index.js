@@ -23,8 +23,9 @@ import { SocketContext }    from "../components/Socket";
 import { postRequest, errorManagement } from "../api/api";
 
 
-import { socketTyping, socketRemove, socketMessage, socketExit, socketJoin, socketConnect } from "../api/socketRoutes";
+import { socketTyping, socketRemove, socketMessage, socketExit, socketJoin } from "../api/socketRoutes";
 import { callInit, callJoin } from "../api/callSocketRoutes";
+import InformationWindow from "../chat/InformationWindow";
 
 export default function Index(){
     const socket = useContext(SocketContext)
@@ -37,11 +38,6 @@ export default function Index(){
     const chat = useSelector((state) => state.chatReducer.value.chat)
     const callSettings = useSelector((state) => state.callSettingReducer)
 
-    //ERROR, either false or an object. If object, it holds value in ERROR.PURPOSE.
-    //This is displayed in the error window that appear on top
-    const ERROR = useSelector((state) => state.chatReducer.value.ERROR)
-    const MESSAGE = useSelector((state) => state.chatReducer.value.MESSAGE)
-
     //Chat Window States
     const chat_window = useSelector((state) => state.chatReducer.value.chat_window) //Data for the purpose behind popup Window
     const isChat_window = useSelector((state) => state.chatReducer.value.isChat_window) //true or false
@@ -50,16 +46,6 @@ export default function Index(){
 
     const [width, setWidth] = useState()
     const [access, setAccess] = useState(false)
-
-    useEffect(() => {
-        if(ERROR){
-            setTimeout(() => { dispatch(chatReducer({ERROR: false}))}, 10000)
-        }
-
-        if(MESSAGE){
-            setTimeout(() => { dispatch(chatReducer({MESSAGE: false}))}, 10000)
-        }
-    }, [ERROR, MESSAGE])
 
     // Socket routes
     useEffect(() => {
@@ -78,7 +64,6 @@ export default function Index(){
 
             //Call routes
             socket.on('call-init', (data) => { 
-                console.log(data)
                 callInit(data, socket) 
             })
             socket.on('call-join', callJoin)
@@ -272,17 +257,7 @@ export default function Index(){
                     locale={locale}
                 />
                 <ChatImageCarousel />
-                <div 
-                    className={!ERROR ? "error-window" : "error-window appear"}
-                    style={{top: (MESSAGE && ERROR) ? '150px' : null}}
-                >
-                    <i className="material-icons">error</i>
-                    <span>{ERROR.PURPOSE}</span>
-                </div>
-                <div className={!MESSAGE ? "message-window" : "message-window appear"}>
-                    <i className="material-icons">info</i>
-                    <span>{MESSAGE.PURPOSE}</span>
-                </div>
+                <InformationWindow />
         </>
     )
 }

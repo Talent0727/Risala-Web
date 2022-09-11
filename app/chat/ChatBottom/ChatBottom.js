@@ -32,6 +32,7 @@ export default function ChatBottom({inputRef, socket}){
     const chat = useSelector((state) => state.chatReducer.value.chat)
     const chats = useSelector((state) => state.chatReducer.value.chats)
     const uploadFiles = useSelector((state) => state.chatReducer.value.uploadFiles)
+    const MESSAGES = useSelector((state) => state.chatReducer.value.MESSAGES)
 
     useEffect(() => {
         if(reply){
@@ -274,14 +275,8 @@ export default function ChatBottom({inputRef, socket}){
                         }
                     } else {
                         dispatch(chatReducer({
-                            ERROR: {
-                                PURPOSE: "File size is too large. Maximum file size is 20MB"
-                            }
+                            MESSAGES: [...MESSAGES, { purpose: "error", message: "File size is too large. Maximum file size is 20MB"}]
                         }))
-
-                        setTimeout(() => {
-                            dispatch(chatReducer({ERROR: false}))
-                        }, 5000);
                     }
                 }
                 
