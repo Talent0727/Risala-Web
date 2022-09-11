@@ -87,7 +87,6 @@ io.on('connection', (socket) => {
 
     
     socket.on('disconnect', (data) => {
-        console.log(data)
         console.log(`User Disconnected: ${socket.id}`);
     });
 
@@ -106,7 +105,6 @@ io.on('connection', (socket) => {
 
     //Join socket
     socket.on('join', (data) => {
-        console.log(data)
         socket.join(data)
     })
 
@@ -119,11 +117,12 @@ io.on('connection', (socket) => {
     })
     
     socket.on('call-closed', (data) => {
-        console.log('Call-closed', data)
+        console.log('call-closed', data.room)
         socket.to(data.room).emit('call-closed', data)
     })
 
     socket.on('call-join', (data) => {
+        console.log('Call-joined', data.room)
         socket.to(data.room).emit('call-join', data)
     })
 
