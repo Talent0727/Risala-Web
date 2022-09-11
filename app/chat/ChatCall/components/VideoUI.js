@@ -10,6 +10,34 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
 
     return(
         <div className="single-call video">
+            {
+                (userSettings.isPresenting || peerSettings.isPeerPresenting) &&
+                <div className="presentation-information-nav">
+                    {
+                        userSettings.isPresenting &&
+                        <>
+                            <figure>
+                                <img src={ USER_DATA.profile_picture ? USER_DATA.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
+                            </figure>
+                            <span>
+                                {`${USER_DATA.firstname} ${USER_DATA.lastname} is presenting`}
+                            </span>
+                        </>
+
+                    }
+                    {
+                        peerSettings.isPeerPresenting &&
+                        <>
+                            <figure>
+                                <img src={ peerObject.profile_picture ? peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
+                            </figure>
+                            <span>
+                                {`${peerObject.firstname} ${peerObject.lastname} is presenting`}
+                            </span>
+                        </>
+                    }
+                </div>
+            }
             <div className={ ((!userSettings.isFullScreen || peerSettings.isPeerPresenting) && !userSettings.isPresenting) ? "peer-screen full-screen" : "peer-screen small-screen" }>
                 {
                     (!peerSettings.isPeerCam && peerObject && !peerSettings.isPeerPresenting) &&
