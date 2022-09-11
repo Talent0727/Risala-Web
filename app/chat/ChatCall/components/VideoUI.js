@@ -12,7 +12,7 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
         <div className="single-call video">
             <div className={ ((!userSettings.isFullScreen || peerSettings.isPeerPresenting) && !userSettings.isPresenting) ? "peer-screen full-screen" : "peer-screen small-screen" }>
                 {
-                    (!peerSettings.isPeerCam && peerObject) &&
+                    (!peerSettings.isPeerCam && peerObject && !peerSettings.isPeerPresenting) &&
                     <figure>
                         <img src={ peerObject.profile_picture ? peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
                     </figure>
@@ -27,7 +27,7 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                             <i className="material-icons">mic_off</i>
                         }
                         {
-                            !callSettings.peerSettings.isPeerMuted &&
+                            !peerSettings.isPeerMuted &&
                             <>
                                 <div className="volume-mark-1"></div>
                                 <div className="volume-mark-2"></div>
@@ -46,7 +46,7 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
             </div>
             <div className={ ((userSettings.isFullScreen || userSettings.isPresenting) && !peerSettings.isPeerPresenting) ? "user-window full-screen" : "user-window small-screen" }>
                 {
-                    !userSettings.isCam &&
+                    !userSettings.isCam && !userSettings.isPresenting &&
                     <figure>
                         <img src={ USER_DATA.profile_picture ? USER_DATA.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
                     </figure>
