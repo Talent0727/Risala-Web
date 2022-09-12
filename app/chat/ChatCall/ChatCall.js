@@ -319,18 +319,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
         setTimer(0)
         setStream(userSettings.userStream)
 
-        peer = new Peer({
-            initiator: callSettings.initiator,
-            trickle: false,
-            stream: userSettings.userStream
-        })
-
-        setUserPeer(peer)
-        dispatch(callSettingReducer({
-            userSettings: {
-                userPeer: peer
-            }
-        }))
+        setUserPeer(userSettings.userPeer)
 
         if(callSettings.purpose === "video"){
             dispatch(callSettingReducer({ userSettings: { isCam: true }}))
@@ -354,10 +343,10 @@ export default function ChatCall({ locale, current, USER_DATA }){
         // This is the 2nd signal
         if(!callSettings.initiator){
             console.log("Signal")
-            peer.signal(callSettings.signalData)
+            userSettings.userPeer.signal(callSettings.signalData)
         }
 
-        peer.on('signal', (signal) => {
+        userSettings.userPeer.on('signal', (signal) => {
             // The reciever
             if(!callSettings.initiator){
                 var callObject = {
@@ -386,11 +375,12 @@ export default function ChatCall({ locale, current, USER_DATA }){
         })
 
         // This is correct
-        peer.on('stream', (stream) => {
+        userSettings.userPeer.on('stream', (stream) => {
             setTimer(0)
             setPeerStream(stream)
             dispatch(callSettingReducer({
                 userSettings: { isMuted: false },
+                peerSettings: { peerStream: stream }
             }))
 
             if(callSettings.purpose === "video"){
@@ -421,12 +411,12 @@ export default function ChatCall({ locale, current, USER_DATA }){
         })
 
         // If the call was interrupted
-        peer.on('close', (err) => {
+        userSettings.userPeer.on('close', (err) => {
             console.log(err)
             callInterupt(err, timeStamp)
         })
 
-        peer.on('error', (err) => {
+        userSettings.userPeer.on('error', (err) => {
             console.log(err)
             informationManager({purpose: 'error', message: err.message ? err.message : err})
             callInterupt(err, timeStamp)
@@ -436,11 +426,17 @@ export default function ChatCall({ locale, current, USER_DATA }){
     function screenShare(){
         navigator.mediaDevices.getDisplayMedia({ cursor: true })
         .then((screenStream) => {
-            if(peer){
-                peer.replaceTrack(
-                    stream.getVideoTracks()[0],
+            dispatch(callSettingReducer({
+                userSettings: {
+                    screenStream: screenStream
+                }
+            }))
+
+            if(userSettings.userPeer){
+                userSettings.userPeer.replaceTrack(
+                    userSettings.userStream.getVideoTracks()[0],
                     screenStream.getVideoTracks()[0],
-                    stream
+                    userSettings.userStream
                 );
                 
                 //Emit event
@@ -467,17 +463,17 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     if(peer){
                         peer.replaceTrack(
                             screenCastStream.currentTarget,
-                            stream.getVideoTracks()[0],
-                            stream
+                            userSettings.userStream.getVideoTracks()[0],
+                            userSettings.userStream
                         );
                     } else if(userPeer && !peer){
                         userPeer.replaceTrack(
                             screenCastStream.currentTarget,
-                            stream.getVideoTracks()[0],
-                            stream
+                            userSettings.userStream.getVideoTracks()[0],
+                            userSettings.userStream
                         );
                     } 
-                    userVideo.current.srcObject = stream
+                    userVideo.current.srcObject = userSettings.userStream
                     dispatch(callSettingReducer({
                         userSettings: {
                             isPresenting: false,
@@ -517,15 +513,15 @@ export default function ChatCall({ locale, current, USER_DATA }){
     
 
     function stopScreenShare(isClosing = false){
-        if(screenCastStream){
-            screenCastStream.getVideoTracks().forEach(function (track) {
+        if(userSettings.castStream){
+            userSettings.castStream.getVideoTracks().forEach(function (track) {
                 track.stop();
             });
         }
 
         if(!isClosing){
             try {
-                userVideo.current.srcObject = stream
+                userVideo.current.srcObject = userSettings.userStream
             } catch(err){
                 console.log(err)
                 console.error(err)
@@ -538,18 +534,18 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 }
             }))
     
-            if(peer){
+            if(userSettings.userPeer){
                 try {
-                    peer.replaceTrack(
-                        screenCastStream.getVideoTracks()[0],
-                        stream.getVideoTracks()[0],
-                        stream
+                    userSettings.userPeer.replaceTrack(
+                        userSettings.screenStream.getVideoTracks()[0],
+                        userSettings.userStream.getVideoTracks()[0],
+                        userSettings.userStream
                     );
                 } catch(err){
                     console.log(err)
                     try {
-                        var previousStream = stream.getVideoTracks()[0];
-                        peer.replaceTrack(previousStream)
+                        var previousStream = userSettings.userStream.getVideoTracks()[0];
+                        userSettings.userPeer.replaceTrack(previousStream)
                     } catch(err){
                         console.log(err)
                         informationManager({purpose: 'error', message: "Could not replace video track, please reload the page"})
@@ -574,15 +570,15 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     function stopCamera(){
         if(userSettings.isPresenting){
-            screenCastStream.getVideoTracks().forEach(function (track) {
+            userSettings.screenStream.getVideoTracks().forEach(function (track) {
                 track.stop();
             });
         }
 
         if(userSettings.isCam){
-            stream.getTracks()[1].enabled = false
+            userSettings.userStream.getTracks()[1].enabled = false
         } else { //You go from unmuted to muted
-            stream.getTracks()[1].enabled = true
+            userSettings.userStream.getTracks()[1].enabled = true
         }
 
         if(peerObject){
@@ -636,9 +632,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                         timer={timer}
                         setTimer={setTimer}
                         socket={socket}
-                        stream={stream}
                         peerObject={peerObject}
-                        peer={peer}
                         setIsTimer={setIsTimer}
                         setUserPeer={setUserPeer}
                     />
@@ -655,8 +649,8 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     function callTerminated(){
         console.log("Call terminated was triggered")
-        if(stream){
-            stream.getTracks().forEach(function(track) {
+        if(userSettings.userStream){
+            userSettings.userStream.getTracks().forEach(function(track) {
                 track.stop();
             });
         }
@@ -684,8 +678,8 @@ export default function ChatCall({ locale, current, USER_DATA }){
             room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id)
         })
 
-        if(stream){
-            stream.getTracks().forEach((track) => {
+        if(userSettings.userStream){
+            userSettings.userStream.getTracks().forEach((track) => {
                 track.stop();
             });
         }

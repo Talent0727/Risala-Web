@@ -4,7 +4,7 @@ import { chatReducer } from "../../../features/chat";
 import { callSettingReducer, callSettingsReset } from "../../../features/callSettings";
 import callMessage from "../../ChatBottom/functions/callMessage";
 
-export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTimer, timeStamp, setTimeStamp, timer, setTimer, socket, stream, peerObject, peer, setIsTimer, setUserPeer }){
+export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTimer, timeStamp, setTimeStamp, timer, setTimer, socket, peerObject, setIsTimer, setUserPeer }){
     const dispatch = useDispatch();
     const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
@@ -20,9 +20,9 @@ export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTi
     function muteMic(){
         //You are at the moment muted, muted -> unmuted
         if(userSettings.isMuted){
-            stream.getTracks()[0].enabled = true
+            userSettings.userStream.getTracks()[0].enabled = true
         } else { //You go from unmuted to muted
-            stream.getTracks()[0].enabled = false
+            userSettings.userStream.getTracks()[0].enabled = false
         }
 
         try{
@@ -45,8 +45,8 @@ export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTi
 
     // Initiated if YOU hang up
     function hangUp(){
-        if(stream){
-            stream.getTracks().forEach(function(track) {
+        if(userSettings.useStream){
+            userSettings.userStream.getTracks().forEach(function(track) {
                 track.stop();
             });
         }

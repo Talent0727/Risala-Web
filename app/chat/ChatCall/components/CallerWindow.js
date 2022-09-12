@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { chatReducer } from "../../../features/chat";
 import { callSettingReducer, callSettingsReset } from "../../../features/callSettings";
 import informationManager from "../../../modules/informationManager";
+import Peer from "simple-peer";
 
 export default function CallerWindow({ socket }){
     const dispatch = useDispatch();
@@ -31,6 +32,12 @@ export default function CallerWindow({ socket }){
         })
 
         function initCall(stream){
+            const peer = new Peer({
+                initiator: false,
+                trickle: false,
+                stream: stream
+            })
+
             dispatch(callSettingReducer({
                 isInCall: true,
                 joined: [...callSettings.joined, USER_DATA.account_id],
@@ -38,6 +45,7 @@ export default function CallerWindow({ socket }){
                 userSettings: {
                     isCam: callSettings.purpose === "video" ? true : false,
                     isMuted: false,
+                    userPeer: peer,
                     userStream: stream
                 }
             }))

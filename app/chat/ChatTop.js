@@ -4,6 +4,7 @@ import { chatReducer, user_search_remove } from "../features/chat";
 import { callSettingReducer } from "../features/callSettings";
 import { postRequest, errorManagement } from "../api/api";
 import informationManager from "../modules/informationManager";
+import Peer from 'simple-peer'
 
 export default function  ChatTop({setWidth, socket}){
     const dispatch = useDispatch();
@@ -458,6 +459,11 @@ export default function  ChatTop({setWidth, socket}){
         })
 
         function initCall(stream){
+            const peer = new Peer({
+                initiator: true,
+                trickle: false,
+                stream: stream
+            })
             dispatch(callSettingReducer({
                 isActive: true,
                 isInCall: true,
@@ -470,6 +476,7 @@ export default function  ChatTop({setWidth, socket}){
                 userSettings: {
                     isCam: type === "video" ? true : false,
                     isMuted: false,
+                    userPeer: peer,
                     userStream: stream
                 }
             }))
