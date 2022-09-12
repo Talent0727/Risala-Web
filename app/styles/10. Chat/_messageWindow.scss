@@ -40,7 +40,7 @@
             color: $white;
         }
         &.remove{
-            animation: dissapear 600ms ease forwards
+            animation: dissapear 600ms ease forwards;
         }
     }
 
@@ -80,8 +80,14 @@
         opacity: 1;
         display: flex;
     }
-    90% {
-        opacity: 0;
+    25%{
+        opacity: 0.75;
+    }
+    50%{
+        opacity: 0.5;
+    }
+    75%{
+        opacity: 0.25;
     }
     100% {
         opacity: 0;

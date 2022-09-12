@@ -8079,8 +8079,14 @@ a:active {
     opacity: 1;
     display: flex;
   }
-  90% {
-    opacity: 0;
+  25% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  75% {
+    opacity: 0.25;
   }
   100% {
     opacity: 0;
@@ -8092,8 +8098,14 @@ a:active {
     opacity: 1;
     display: flex;
   }
-  90% {
-    opacity: 0;
+  25% {
+    opacity: 0.75;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  75% {
+    opacity: 0.25;
   }
   100% {
     opacity: 0;

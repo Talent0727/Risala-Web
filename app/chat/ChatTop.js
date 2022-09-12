@@ -466,9 +466,7 @@ export default function  ChatTop({setWidth, socket}){
                 members: [...current.members],
                 joined: [USER_DATA.account_id],
                 initiator: true,
-                initiatorID: USER_DATA.account_id
-            }))
-            dispatch(callSettingReducer({
+                initiatorID: USER_DATA.account_id,
                 userSettings: {
                     isCam: type === "video" ? true : false,
                     isMuted: false,

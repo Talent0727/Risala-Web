@@ -142,7 +142,8 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     useEffect(() => {
         if(callSettings.isInCall && callSettings.isActive){
-            initWebRTC()
+            //initWebRTC()
+            initiateCall()
         }
     }, [callSettings.isInCall, callSettings.isActive])
 
@@ -158,7 +159,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     /*************************/
 
-    function initWebRTC(noVideo = false){
+    function initWebRTC(){
         setTimeStamp('00:00:00')
         setIsTimer(true)
         setTimer(0)
@@ -309,6 +310,126 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     informationManager({purpose: 'error', message: `${err.message} by you`})
                 }
             }
+        })
+    }
+
+    function initiateCall(){
+        setTimeStamp('00:00:00')
+        setIsTimer(true)
+        setTimer(0)
+        setStream(userSettings.userStream)
+
+        peer = new Peer({
+            initiator: callSettings.initiator,
+            trickle: false,
+            stream: userSettings.userStream
+        })
+
+        setUserPeer(peer)
+        dispatch(callSettingReducer({
+            userSettings: {
+                userPeer: peer
+            }
+        }))
+
+        if(callSettings.purpose === "video"){
+            dispatch(callSettingReducer({ userSettings: { isCam: true }}))
+            if(userVideo.current){
+                userVideo.current.srcObject = userSettings.userStream
+            } else {
+                document.querySelector('.user-video').srcObject = userSettings.userStream
+            }
+        }
+
+        if(callSettings.purpose === "video"){
+            var volumeMeter = document.querySelector('.user-window .volume-meter')
+        } else {
+            var volumeMeter = document.querySelector('.volume-meter')
+        }
+
+        volumeMeterInit(userSettings.userStream, volumeMeter, callSettings.purpose)
+
+        // If you are not the initiator, then send a signal back to the one who sent the signal to
+        // begin with in order to "answer" the signal
+        // This is the 2nd signal
+        if(!callSettings.initiator){
+            console.log("Signal")
+            peer.signal(callSettings.signalData)
+        }
+
+        peer.on('signal', (signal) => {
+            // The reciever
+            if(!callSettings.initiator){
+                var callObject = {
+                    id: callSettings.id,
+                    joined: USER_DATA.account_id,
+                    room: [...callSettings.joined].filter(e => e !== USER_DATA.account_id),
+                    signal: signal
+                }
+                socket.emit('call-join', callObject)
+            } else { // The initiator, send initation signal
+                dispatch(callSettingReducer({
+                    userSettings: {
+                        firstSignal: signal
+                    }
+                }))
+
+                var callObject = {
+                    ...callSettings,
+                    ['initiator']: false,
+                    ['room']: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id),
+                    ['isInCall']: false,
+                    signalData: signal
+                }
+                socket.emit('call-init', callObject) // The first "signal" is sent here
+            }
+        })
+
+        // This is correct
+        peer.on('stream', (stream) => {
+            setTimer(0)
+            setPeerStream(stream)
+            dispatch(callSettingReducer({
+                userSettings: { isMuted: false },
+            }))
+
+            if(callSettings.purpose === "video"){
+                peerVideo.current.srcObject = stream
+                dispatch(callSettingReducer({
+                    userSettings: { isCam: true },
+                    peerSettings: { isCam: true }
+                }))
+            } else {
+                var peerAudioManual = document.querySelector('.peer-audio')
+                if(peerAudio.current){
+                    peerAudio.current.srcObject = stream
+                } else if (peerAudioManual) {
+                    peerAudioManual.srcObject = stream
+                }
+                dispatch(callSettingReducer({
+                    peerSettings: { isMuted: false }
+                }))
+            }
+
+            if(callSettings.purpose === "video"){
+                var volumeMeter = document.querySelector('.peer-screen .volume-meter')
+            } else {
+                var volumeMeter = document.querySelectorAll('.volume-meter')[1]
+            }
+
+            volumeMeterInit(stream, volumeMeter, callSettings.purpose)
+        })
+
+        // If the call was interrupted
+        peer.on('close', (err) => {
+            console.log(err)
+            callInterupt(err, timeStamp)
+        })
+
+        peer.on('error', (err) => {
+            console.log(err)
+            informationManager({purpose: 'error', message: err.message ? err.message : err})
+            callInterupt(err, timeStamp)
         })
     }
 
