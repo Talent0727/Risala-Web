@@ -106,8 +106,10 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 console.log("Triggered missed call")
                 callMessage(socket, callSettings, timeStamp, true)
                 callTerminated()
-                socket.emit('call-exit', {
+                socket.emit('call-closed', {
                     id: callSettings.id,
+                    user_id: USER_DATA.account_id,
+                    reason: `Missed call from ${USER_DATA.firstname} ${USER_DATA.lastname}`,
                     room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id),
                     callSettings: callSettings
                 })
@@ -300,6 +302,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
         })
         .catch((err) => {
             console.error(err)
+            console.log(err, err instanceof DOMException)
             if(err.message === "Requested device not found" && callSettings.purpose === "video"){
                 console.log("Error with video and camera access")
 

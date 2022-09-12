@@ -126,10 +126,6 @@ io.on('connection', (socket) => {
         socket.to(data.room).emit('call-join', data)
     })
 
-    socket.on('call-exit', (data) => {
-        socket.to(data.room).emit('call-exit', data)
-    })
-
     socket.on('call-message', (data) => {
         socket.to(data.room).emit('call-message', data)
     })
