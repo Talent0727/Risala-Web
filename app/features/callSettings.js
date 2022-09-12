@@ -23,9 +23,9 @@ const initialState = {
     },
     screenCastStream: undefined,
     signalData: {
-        initSignal: undefined,
-        secondSignal: undefined,
-        thirdSignal: undefined
+        initSignal: null,
+        secondSignal: null,
+        thirdSignal: null
     },
     signalData: null
 }
