@@ -57,7 +57,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     }))
                 } else if(data.purpose === "screen-sharing"){
                     if(data.isSharing){
-
                         if(userSettings.isPresenting){
                             stopScreenShare()
                         }
@@ -77,48 +76,27 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     dispatch(chatReducer({
                         MESSAGS: [...MESSAGES, {purpose: 'error', message: `An error has occurred by your peer: ${err}`}],
                     }))
-                    console.log('Error Message Triggered')
                     callTerminated()
                 } else if(data.purpose === "reject"){
-                    console.log("reject triggered")
                     callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, true)
                     callTerminated()
                 }
             })
             socket.on('call-error', (data) => {
-                console.log('************** Call ERROR *******************')
                 dispatch(chatReducer({
                     MESSAGES: [...MESSAGES, {purpose: 'error', message: `An error occured by your peer: ${data.error}`}],
                 }))
                 callTerminated()
             })
-            socket.on('call-closed', (data) => {
-                console.log('call-closed recieved', data)
-                dispatch(callSettingsReset())
-                dispatch(chatReducer({
-                    MESSAGES: [...MESSAGES, {purpose: 'information', message: `Call closed by: ${data.name}`}]
-                }))
-            })
-
-            // Initiated if the Peer ends the call
-            //socket.on('call-exit', (data) => {
-            //    if(data.initiator){
-            //        if(data.joined.length === 1){
-            //            callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, true)
-            //        } else {
-            //            callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, false)
-            //        }
-            //    }
-            //    console.log("Call exit triggered")
-            //    callTerminated()
+            //socket.on('call-closed', (data) => {
+            //    console.log('call-closed recieved', data)
+            //    dispatch(callSettingsReset())
+            //    var message = data.reason ? data.reason : `Call closed by: ${data.name}`
+            //    dispatch(chatReducer({
+            //        MESSAGES: [...MESSAGES, {purpose: 'information', message: message}]
+            //    }))
             //})
         }
-
-        return(() => {
-            socket.off('call-closed')
-            socket.off('call-error')
-            socket.off('call-message')
-        })
     }, [socket.connected])
 
     // Keep this one
@@ -135,6 +113,15 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 })
                 setTimer(0)
             }
+        } else if(timer === 10 && callSettings.joined.length === 1 && callSettings.initiator && callSettings.isActive){
+            var callObject = {
+                ...callSettings,
+                ['initiator']: false,
+                ['room']: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id),
+                ['isInCall']: false,
+                signalData: userSettings.firstSignal
+            }
+            socket.emit('call-init', callObject)
         }
     }, [timer, callSettings.joined])
 
@@ -226,6 +213,12 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     }
                     socket.emit('call-join', callObject)
                 } else { // The initiator, send initation signal
+                    dispatch(callSettingReducer({
+                        userSettings: {
+                            firstSignal: signal
+                        }
+                    }))
+
                     var callObject = {
                         ...callSettings,
                         ['initiator']: false,

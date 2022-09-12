@@ -21,6 +21,7 @@ export default function CallerWindow({ socket }){
             id: callSettings.id,
             user_id: USER_DATA.account_id,
             name: `${USER_DATA.firstname} ${USER_DATA.lastname}`,
+            reason: `Call rejected by ${USER_DATA.firstname} ${USER_DATA.lastname}`,
             room: callSettings.joined.filter(e => e.id !== USER_DATA.account_id)
         })
         dispatch(callSettingsReset())

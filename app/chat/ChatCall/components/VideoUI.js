@@ -34,9 +34,7 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                             <figure>
                                 <img src={ USER_DATA.profile_picture ? USER_DATA.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
                             </figure>
-                            <span>
-                                {`${USER_DATA.firstname} ${USER_DATA.lastname} is presenting`}
-                            </span>
+                            <span>You are presenting</span>
                         </>
 
                     }

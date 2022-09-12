@@ -8,6 +8,7 @@ export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTi
     const dispatch = useDispatch();
     const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
+    const peerSettings = useSelector((state) => state.callSettingReducer.peerSettings)
     const current = useSelector((state) => state.chatReducer.value.current)
     const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
 
@@ -123,11 +124,13 @@ export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTi
     }, [isTimer, timer])
 
     function setFullScreen(){
-        dispatch(callSettingReducer({
-            userSettings: {
-                isFullScreen: !userSettings.isFullScreen
-            }
-        }))
+        if(!userSettings.isPresenting && !peerSettings.isPresenting){
+            dispatch(callSettingReducer({
+                userSettings: {
+                    isFullScreen: !userSettings.isFullScreen
+                }
+            }))
+        }
     }
 
     return(
@@ -155,12 +158,14 @@ export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTi
                         <i 
                             className="material-icons" 
                             onClick={setFullScreen}
+                            style={userSettings.isFullScreen ? {backgroundColor: '#ffffffb3'} : null}
                         >
                             {userSettings.isFullScreen ? "fullscreen" : "fullscreen_exit"}
                         </i>
                         <i
                             className="material-icons"
                             onClick={!userSettings.isPresenting ? screenShare : stopScreenShare}
+                            style={userSettings.isPresenting ? {backgroundColor: '#ffffffb3'} : null}
                         >
                             {!userSettings.isPresenting ? "screen_share" : "stop_screen_share"}
                         </i>

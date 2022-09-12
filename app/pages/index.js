@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { chatReducer, objectAdd } from "../features/chat";
-import { callSettingReducer } from "../features/callSettings";
+import { callSettingReducer, callSettingsReset } from "../features/callSettings";
 import useLocale from "../hooks/useLocale";
 
 //Components
@@ -18,14 +18,12 @@ import ChatWindow           from "../chat/ChatWindow/ChatWindow";
 import ChatImageCarousel    from "../chat/ChatImageCarousel";
 import ChatCall             from "../chat/ChatCall/ChatCall";
 import MobileErrorWindow    from "../chat/MobileErrorWindow";
+import InformationWindow    from "../chat/InformationWindow";
+
 import { SocketContext }    from "../components/Socket";
-
 import { postRequest, errorManagement } from "../api/api";
-
-
 import { socketTyping, socketRemove, socketMessage, socketExit, socketJoin } from "../api/socketRoutes";
-import { callInit, callJoin } from "../api/callSocketRoutes";
-import InformationWindow from "../chat/InformationWindow";
+import { callClosed, callInit, callJoin } from "../api/callSocketRoutes";
 
 export default function Index(){
     const socket = useContext(SocketContext)
@@ -37,6 +35,7 @@ export default function Index(){
     const isMobile = useSelector((state) => state.chatReducer.value.isMobile)
     const chat = useSelector((state) => state.chatReducer.value.chat)
     const callSettings = useSelector((state) => state.callSettingReducer)
+    const MESSAGES = useSelector((state) => state.chatReducer.value.MESSAGES)
 
     //Chat Window States
     const chat_window = useSelector((state) => state.chatReducer.value.chat_window) //Data for the purpose behind popup Window
@@ -64,9 +63,16 @@ export default function Index(){
 
             //Call routes
             socket.on('call-init', (data) => { 
-                callInit(data, socket) 
+                callInit(data, socket, callSettings) 
             })
             socket.on('call-join', callJoin)
+            socket.on('call-closed', (data) => {
+                dispatch(callSettingsReset())
+                var message = data.reason ? data.reason : `Call closed by: ${data.name}`
+                dispatch(chatReducer({
+                    MESSAGES: [...MESSAGES, {purpose: 'information', message: message}]
+                }))
+            })
         }
 
         return(() => {
