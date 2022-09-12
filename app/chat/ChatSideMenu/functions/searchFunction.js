@@ -63,7 +63,7 @@ function scoreMatcher(nameArray, alias, nicknames, searchString){
 
     nameArray.forEach((name, index) => {
         name.forEach((subName, index) => {
-            var nameScore = stringSearcher(subName, searchStringWithSpace ? searchStringWithSpace[index] : searchString)
+            var nameScore = stringSearcher(subName, searchStringWithSpace ? searchStringWithSpace[index] : searchString, nameArray)
             score = score + nameScore
         })
     })
@@ -104,7 +104,7 @@ function scoreMatcher(nameArray, alias, nicknames, searchString){
     return score
 }
 
-function stringSearcher(substring, searchSubstring){
+function stringSearcher(substring, searchSubstring, array = 0){
     let score = 0;
 
     if(substring && searchSubstring){
@@ -116,6 +116,11 @@ function stringSearcher(substring, searchSubstring){
                     score --
                 }
             }
+        }
+
+        // Extra score for individual conversation with matching name
+        if(substring.toLowerCase() === searchSubstring.toLowerCase() && array.length === 1){
+            score = score + 50
         }
     }
 
