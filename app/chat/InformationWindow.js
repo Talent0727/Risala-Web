@@ -23,6 +23,7 @@ export default function InformationWindow({}){
                     var id = parseInt(element.getAttribute('data-id'))
 
                     setTimeout(() => {
+                        element.classList.add('remove')
                         removeMessage(id)
                     }, 8000);
                 }
@@ -35,10 +36,12 @@ export default function InformationWindow({}){
     }
 
     function removeMessage(id){
-        var newMessage = [...MESSAGES].filter(e => e.id !== id);
-        dispatch(chatReducer({
-            MESSAGES: newMessage
-        }))
+        setTimeout(() => {
+            var newMessage = [...MESSAGES].filter(e => e.id !== id);
+            dispatch(chatReducer({
+                MESSAGES: newMessage
+            }))
+        }, 600);
     }
 
     return(

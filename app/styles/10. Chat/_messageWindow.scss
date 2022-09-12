@@ -39,6 +39,9 @@
             font-size: 14px;
             color: $white;
         }
+        &.remove{
+            animation: dissapear 600ms ease forwards
+        }
     }
 
     .message-window{
@@ -73,7 +76,15 @@
 }
 
 @keyframes dissapear{
-    to {
+    0% {
+        opacity: 1;
+        display: flex;
+    }
+    90% {
         opacity: 0;
+    }
+    100% {
+        opacity: 0;
+        display: none;
     }
 }

@@ -10,9 +10,8 @@ export default function informationManager(value){
         ...value,
         id: uuidv4()
     }
-    console.log(object)
 
     store.dispatch(chatReducer({
-        MESSAGES: [...MESSAGES, object]
+        MESSAGES: [object, ...MESSAGES]
     }))
 }

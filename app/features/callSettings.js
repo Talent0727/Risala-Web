@@ -14,9 +14,11 @@ const initialState = {
         isMuted: false,
         isPresenting: false,
         isFullScreen: false,
-        userPeer: undefined
+        userPeer: undefined,
+        userStream: null
     },
     peerSettings: {
+        isJoined: false,
         isCam: false,
         isMuted: false,
         isPresenting: false,

@@ -445,27 +445,36 @@ export default function  ChatTop({setWidth, socket}){
     // This is triggered whenever a user has clicked on the videocall button or call button.
     // Triggers ChatCall.js
     function callClick(type){
-        var callVideoObject = {
-            isActive: true,
-            purpose: type,
-            id: current.id,
-            joined: [USER_DATA.account_id],
-            room: COUNTER_DATA[0].id,
-            members: [...current.members],
-            initiator: USER_DATA.account_id,
-            isInit: true
-        }
-        dispatch(chatReducer({ callSettings: callVideoObject }))
+        navigator.mediaDevices.getUserMedia({
+            video: type === "video" ? true : false,
+            audio: true
+        })
+        .then((stream) => {
+            initCall(stream)
+        })
+        .catch((err) => {
+            informationManager({purpose: 'error', message: `${err.message} Please allow your browser to access the camera/microphone.`})
+            console.log(err)
+        })
 
-        dispatch(callSettingReducer({
-            isActive: true,
-            isInCall: true,
-            purpose: type,
-            id: current.id,
-            members: [...current.members],
-            joined: [USER_DATA.account_id],
-            initiator: true,
-            initiatorID: USER_DATA.account_id
-        }))
+        function initCall(stream){
+            dispatch(callSettingReducer({
+                isActive: true,
+                isInCall: true,
+                purpose: type,
+                id: current.id,
+                members: [...current.members],
+                joined: [USER_DATA.account_id],
+                initiator: true,
+                initiatorID: USER_DATA.account_id
+            }))
+            dispatch(callSettingReducer({
+                userSettings: {
+                    isCam: type === "video" ? true : false,
+                    isMuted: false,
+                    userStream: stream
+                }
+            }))
+        }
     }
 }

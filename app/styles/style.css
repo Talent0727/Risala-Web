@@ -8015,6 +8015,10 @@ a:active {
   font-size: 14px;
   color: #f4f4f4;
 }
+.message-information-wrapper .message-window.remove, .message-information-wrapper .error-window.remove {
+  -webkit-animation: dissapear 600ms ease forwards;
+          animation: dissapear 600ms ease forwards;
+}
 .message-information-wrapper .message-window {
   background-color: #2c2c2c;
 }
@@ -8071,12 +8075,28 @@ a:active {
   }
 }
 @-webkit-keyframes dissapear {
-  to {
+  0% {
+    opacity: 1;
+    display: flex;
+  }
+  90% {
     opacity: 0;
+  }
+  100% {
+    opacity: 0;
+    display: none;
   }
 }
 @keyframes dissapear {
-  to {
+  0% {
+    opacity: 1;
+    display: flex;
+  }
+  90% {
     opacity: 0;
+  }
+  100% {
+    opacity: 0;
+    display: none;
   }
 }/*# sourceMappingURL=style.css.map */
