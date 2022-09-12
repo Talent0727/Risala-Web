@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { chatReducer, user_search_remove } from "../features/chat";
 import { callSettingReducer } from "../features/callSettings";
 import { postRequest, errorManagement } from "../api/api";
+import informationManager from "../modules/informationManager";
 
 export default function  ChatTop({setWidth, socket}){
     const dispatch = useDispatch();
@@ -369,9 +370,7 @@ export default function  ChatTop({setWidth, socket}){
                 setUserSearchResult(response)
             })
             .catch((err) => {
-                dispatch(chatReducer({
-                    MESSAGES: [...MESSAGES, {purpose: 'error', message: err.message}]
-                }))
+                informationManager({purpose: 'error', message: err.message})
                 errorManagement(err)
                 console.log(err)
             })

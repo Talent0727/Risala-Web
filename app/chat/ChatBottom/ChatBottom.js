@@ -4,6 +4,7 @@ import { chatReducer, arrayEmpty, objectAdd } from "../../features/chat";
 import sendMessage from "./functions/sendMessage";
 
 import EmojiWindow from "../EmojiWindow";
+import informationManager from "../../modules/informationManager";
 
 export default function ChatBottom({inputRef, socket}){
     const [inputValue, setInputValue] = useState('');
@@ -274,9 +275,7 @@ export default function ChatBottom({inputRef, socket}){
                             }))
                         }
                     } else {
-                        dispatch(chatReducer({
-                            MESSAGES: [...MESSAGES, { purpose: "error", message: "File size is too large. Maximum file size is 20MB"}]
-                        }))
+                        informationManager({ purpose: "error", message: "File size is too large. Maximum file size is 20MB"})
                     }
                 }
                 

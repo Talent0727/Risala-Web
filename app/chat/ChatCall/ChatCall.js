@@ -4,6 +4,7 @@ import { chatReducer } from "../../features/chat";
 import { callSettingReducer, callSettingsReset } from "../../features/callSettings";
 import Peer from "simple-peer";
 import { SocketContext } from "../../components/Socket";
+import informationManager from "../../modules/informationManager";
 
 // Components
 import CallerWindow     from "./components/CallerWindow";
@@ -83,19 +84,9 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 }
             })
             socket.on('call-error', (data) => {
-                dispatch(chatReducer({
-                    MESSAGES: [...MESSAGES, {purpose: 'error', message: `An error occured by your peer: ${data.error}`}],
-                }))
+                informationManager({purpose: 'error', message: `An error occured by your peer: ${data.error}`})
                 callTerminated()
             })
-            //socket.on('call-closed', (data) => {
-            //    console.log('call-closed recieved', data)
-            //    dispatch(callSettingsReset())
-            //    var message = data.reason ? data.reason : `Call closed by: ${data.name}`
-            //    dispatch(chatReducer({
-            //        MESSAGES: [...MESSAGES, {purpose: 'information', message: message}]
-            //    }))
-            //})
         }
     }, [socket.connected])
 
@@ -275,9 +266,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
             peer.on('error', (err) => {
                 console.log(err)
-                dispatch(chatReducer({
-                    MESSAGES: [...MESSAGES, {purpose: 'error', message: err.message ? err.message : err}],
-                }))
+                informationManager({purpose: 'error', message: err.message ? err.message : err})
                 callInterupt(err, timeStamp)
             })
         })
@@ -288,33 +277,31 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 if(err.message === "The request is not allowed by the user agent or the platform in the current context."){
                     
                     if(callSettings.purpose === "video"){
-                        dispatch(chatReducer({
-                            MESSAGES: [...MESSAGES, {purpose: 'error', message: `${err.message} Please grant camera access in order to continue.`}],
-                        }))
+                        informationManager({purpose: 'error', message: `${err.message} Please grant camera access in order to continue.`})
+
                     } else {
-                        dispatch(chatReducer({
-                            MESSAGES: [...MESSAGES, {purpose: 'error', message: `${err.message} Please grant microphone access in order to continue.`}],
-                        }))
+                        informationManager({purpose: 'error', message: `${err.message} Please grant microphone access in order to continue.`})
+
+                        try {
+                            //initWebRTC(true)
+                        } catch(err){
+                            informationManager({purpose: 'error', message: err.message})
+                            dispatch(callSettingsReset())
+                        }
                     }
                 } else if(err.message === "Requested device not found" && callSettings.purpose === "video"){
                     console.log("Error with video and camera access")
-    
-                    try {
-                        initWebRTC(true)
-                    } catch(err){
-                        console.log(err)
-                        dispatch(chatReducer({
-                            MESSAGES: [...MESSAGES, {purpose: 'error', message: err.message}],
-                        }))
-            
-                        socket.emit('call-error', {
-                            error: err.message,
-                            room: callSettings.members.map(e => e.id)
-                        })
-                    
-                        callTerminated()
-                    }
-                    initWebRTC(true)
+                    console.log(err)
+                    informationManager({purpose: 'error', message: err.message})
+        
+                    socket.emit('call-error', {
+                        error: err.message,
+                        room: callSettings.members.map(e => e.id)
+                    })
+                
+                    callTerminated()
+                } else if(err.message === "Permission denied"){
+                    informationManager({purpose: 'error', message: `${err.message} by you`})
                 }
             }
         })
@@ -349,8 +336,38 @@ export default function ChatCall({ locale, current, USER_DATA }){
             userVideo.current.srcObject = screenStream
 
             screenStream.getTracks()[0].onended = (screenCastStream) => {
-                console.log(screenStream)
-                stopScreenShare()
+                console.log(screenCastStream)
+                try {
+                    if(peer){
+                        peer.replaceTrack(
+                            screenCastStream.currentTarget,
+                            stream.getVideoTracks()[0],
+                            stream
+                        );
+                    } else if(userPeer && !peer){
+                        userPeer.replaceTrack(
+                            screenCastStream.currentTarget,
+                            stream.getVideoTracks()[0],
+                            stream
+                        );
+                    } 
+                    userVideo.current.srcObject = stream
+                    dispatch(callSettingReducer({
+                        userSettings: {
+                            isPresenting: false,
+                        }
+                    }))
+                    socket.emit('message', {
+                        purpose: 'screen-sharing',
+                        user_id: USER_DATA.account_id,
+                        isSharing: false,
+                        room: callSettings.joined.filter(e => e !== USER_DATA.account_id)
+                    })
+                    
+                } catch(err){
+                    console.log(err)
+                    informationManager({ purpose: 'error', message: 'Could not get camera stream back, please present again, and close the presentation through the button below (Do not click the button from the browser that says "Stop sharing")'})
+                }
             };
         })
         .catch((err) => {
@@ -359,9 +376,15 @@ export default function ChatCall({ locale, current, USER_DATA }){
             console.log(err instanceof DOMException)
 
             if(err instanceof DOMException){
-                dispatch(chatReducer({
-                    MESSAGES: [...MESSAGES, {purpose: 'error', message: `${err.message} Please enable screen sharing in your browser`}]
-                }))
+                //dispatch(chatReducer({
+                //    MESSAGES: [...MESSAGES, {purpose: 'error', message: `${err.message} Please enable screen sharing in your browser`}]
+                //}))
+                informationManager({purpose: 'error', message: `${err.message} Please enable screen sharing in your browser`})
+                //socket.emit('call-error', {
+                //    id: callSettings.id,
+                //    error: err.message,
+                //    room: callSettings.joined.filter(e => e !== USER_DATA.account_id)
+                //})
             }
         })
     }
@@ -377,6 +400,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
         try {
             userVideo.current.srcObject = stream
         } catch(err){
+            console.log(err)
             console.error(err)
         }
 
@@ -395,13 +419,13 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     stream
                 );
             } catch(err){
+                console.log(err)
                 try {
                     var previousStream = stream.getVideoTracks()[0];
                     peer.replaceTrack(previousStream)
                 } catch(err){
-                    dispatch(chatReducer({
-                        MESSAGES: [...MESSAGES, {purpose: 'error', message: "Could not replace video track, please reload the page"}],
-                    }))
+                    console.log(err)
+                    informationManager({purpose: 'error', message: "Could not replace video track, please reload the page"})
                 }
             }
         }

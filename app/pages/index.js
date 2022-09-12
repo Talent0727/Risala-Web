@@ -24,6 +24,7 @@ import { SocketContext }    from "../components/Socket";
 import { postRequest, errorManagement } from "../api/api";
 import { socketTyping, socketRemove, socketMessage, socketExit, socketJoin } from "../api/socketRoutes";
 import { callClosed, callInit, callJoin } from "../api/callSocketRoutes";
+import informationManager from "../modules/informationManager";
 
 export default function Index(){
     const socket = useContext(SocketContext)
@@ -69,9 +70,7 @@ export default function Index(){
             socket.on('call-closed', (data) => {
                 dispatch(callSettingsReset())
                 var message = data.reason ? data.reason : `Call closed by: ${data.name}`
-                dispatch(chatReducer({
-                    MESSAGES: [...MESSAGES, {purpose: 'information', message: message}]
-                }))
+                informationManager({purpose: 'information', message: message})
             })
         }
 

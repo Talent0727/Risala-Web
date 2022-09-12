@@ -131,6 +131,7 @@ io.on('connection', (socket) => {
     })
 
     socket.on('call-error', (data) => {
+        console.log('**** CALL ERROR *****', data.room)
         socket.to(data.room).emit('call-error', data)
     })
 });

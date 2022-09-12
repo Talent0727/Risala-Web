@@ -15,27 +15,15 @@ export default function InformationWindow({}){
         })
     }, [])
 
-    function test(){
-        var messages = [
-            {purpose: 'error', message: "ERROR!!!!"},
-            {purpose: 'error', message: "Connection error :("},
-            {purpose: 'information', message: "Welcome to Risala!"}
-        ]
-
-        dispatch(chatReducer({
-            MESSAGES: messages
-        }))
-    }
-
     function mutationObserver(mutation){
         mutation.forEach((newMessage) => {
             if(newMessage.type === "childList"){
                 if(newMessage.addedNodes.length === 1){
                     var element = newMessage.addedNodes[0]
-                    var index = parseInt(element.getAttribute('data-index'))
+                    var id = parseInt(element.getAttribute('data-id'))
 
                     setTimeout(() => {
-                        removeMessage(index)
+                        removeMessage(id)
                     }, 8000);
                 }
                 console.log(newMessage.addedNodes[0])
@@ -47,8 +35,8 @@ export default function InformationWindow({}){
         observer.observe(document.querySelector('.message-information-wrapper'), { attributes: true, childList: true, subtree: true })
     }
 
-    function removeMessage(index){
-        var newMessage = [...MESSAGES].filter((e,i) => i !== index);
+    function removeMessage(id){
+        var newMessage = [...MESSAGES].filter(e => e.id !== id);
         dispatch(chatReducer({
             MESSAGES: newMessage
         }))
@@ -63,7 +51,7 @@ export default function InformationWindow({}){
                         return(
                             <div 
                                 className="error-window"
-                                data-index={index}
+                                data-id={value.id}
                                 key={index + value}
                             >
                                 <i className="material-icons">error</i>
@@ -74,7 +62,7 @@ export default function InformationWindow({}){
                         return(
                             <div 
                                 className="message-window"
-                                data-index={index}
+                                data-id={value.id}
                                 key={index + value}
                             >
                                 <i className="material-icons">info</i>

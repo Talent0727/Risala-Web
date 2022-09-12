@@ -2,6 +2,7 @@ import axios from "axios";
 import store from "../features/store";
 import { chatReducer } from "../features/chat";
 import { useDispatch } from "react-redux";
+import informationManager from "../modules/informationManager";
 
 export function postRequest(URL, payload, headers){
     return new Promise((resolve, reject) => {
@@ -61,9 +62,7 @@ export function errorManagement(payload){
             })
             .then((response) => {
                 if(response.status === 200){
-                    store.dispatch(chatReducer({ 
-                        MESSAGES: [...MESSAGES, { purpose: 'error', message: payload.message }]
-                    }))
+                    informationManager({ purpose: 'error', message: payload.message })
                     resolve(true)
                 }
             })
