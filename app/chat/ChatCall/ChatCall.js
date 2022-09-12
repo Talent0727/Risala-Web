@@ -267,23 +267,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 volumeMeterInit(stream, volumeMeter, callSettings.purpose)
             })
 
-
-            // This is correct
-            //peer.on('stream', (stream) => {
-            //    setPeerStream(stream)
-            //    dispatch(callSettingReducer({
-            //        userSettings: { isMuted: false }
-            //    }))
-            //
-            //    if(callSettings.purpose === "video"){
-            //        dispatch(callSettingReducer({
-            //            userSettings: { isCam: true }
-            //        }))
-            //    }
-            //
-            //    setTimer(0)
-            //})
-
             // If the call was interrupted
             peer.on('close', (err) => {
                 console.log(err)
@@ -297,31 +280,42 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 }))
                 callInterupt(err, timeStamp)
             })
-
-            /*************************************************************/
         })
         .catch((err) => {
             console.error(err)
-            console.log(err, err instanceof DOMException)
-            if(err.message === "Requested device not found" && callSettings.purpose === "video"){
-                console.log("Error with video and camera access")
-
-                try {
+            console.log(err, err instanceof DOMException, err.message === "The request is not allowed by the user agent or the platform in the current context.")
+            if(err instanceof DOMException){
+                if(err.message === "The request is not allowed by the user agent or the platform in the current context."){
+                    
+                    if(callSettings.purpose === "video"){
+                        dispatch(chatReducer({
+                            MESSAGES: [...MESSAGES, {purpose: 'error', message: `${err.message} Please grant camera access in order to continue.`}],
+                        }))
+                    } else {
+                        dispatch(chatReducer({
+                            MESSAGES: [...MESSAGES, {purpose: 'error', message: `${err.message} Please grant microphone access in order to continue.`}],
+                        }))
+                    }
+                } else if(err.message === "Requested device not found" && callSettings.purpose === "video"){
+                    console.log("Error with video and camera access")
+    
+                    try {
+                        initWebRTC(true)
+                    } catch(err){
+                        console.log(err)
+                        dispatch(chatReducer({
+                            MESSAGES: [...MESSAGES, {purpose: 'error', message: err.message}],
+                        }))
+            
+                        socket.emit('call-error', {
+                            error: err.message,
+                            room: callSettings.members.map(e => e.id)
+                        })
+                    
+                        callTerminated()
+                    }
                     initWebRTC(true)
-                } catch(err){
-                    console.log(err)
-                    dispatch(chatReducer({
-                        MESSAGES: [...MESSAGES, {purpose: 'error', message: err.message}],
-                    }))
-        
-                    socket.emit('call-error', {
-                        error: err.message,
-                        room: callSettings.members.map(e => e.id)
-                    })
-                
-                    callTerminated()
                 }
-                initWebRTC(true)
             }
         })
     }
