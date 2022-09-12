@@ -23,6 +23,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
     const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
     const peerSettings = useSelector((state) => state.callSettingReducer.peerSettings)
+    const MESSAGES = useSelector((state) => state.chatReducer.value.MESSAGES)
 
     const userVideo = useRef(null);
     const peerVideo = useRef(null);
@@ -161,8 +162,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 userPeer.signal(callSettings.signalData)
             } else if(!userPeer && peer) {
                 peer.signal(callSettings.signalData)
-            } else if(!userPeer && !peer && userSettings.userPeer){
-                userSettings.userPeer.signal(callSettings.signalData)
             }
         }
     }, [userPeer, peer, callSettings.signalData])
@@ -365,6 +364,17 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 console.log(screenStream)
                 stopScreenShare()
             };
+        })
+        .catch((err) => {
+            console.log(err)
+            console.log(err.message)
+            console.log(err instanceof DOMException)
+
+            if(err instanceof DOMException){
+                dispatch(chatReducer({
+                    MESSAGES: [...MESSAGES, {purpose: 'error', message: `${err.message} Please enable screen sharing in your browser`}]
+                }))
+            }
         })
     }
     
