@@ -84,8 +84,20 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 }
             })
             socket.on('call-error', (data) => {
+                if(userSettings.isPresenting){
+                    stopScreenShare(true)
+                } 
                 informationManager({purpose: 'error', message: `An error occured by your peer: ${data.error}`})
                 callTerminated()
+            })
+            socket.on('call-closed', (data) => {
+                if(userSettings.isPresenting){
+                    stopScreenShare(true)
+                } else {
+                    dispatch(callSettingsReset())
+                    var message = data.reason ? data.reason : `Call closed by: ${data.name}`
+                    informationManager({purpose: 'information', message: message})
+                }
             })
         }
     }, [socket.connected])
@@ -350,7 +362,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                             isPresenting: false,
                         }
                     }))
-                    socket.emit('message', {
+                    socket.emit('call-message', {
                         purpose: 'screen-sharing',
                         user_id: USER_DATA.account_id,
                         isSharing: false,
@@ -383,53 +395,59 @@ export default function ChatCall({ locale, current, USER_DATA }){
     }
     
 
-    function stopScreenShare(){
+    function stopScreenShare(isClosing = false){
         if(screenCastStream){
             screenCastStream.getVideoTracks().forEach(function (track) {
                 track.stop();
             });
         }
 
-        try {
-            userVideo.current.srcObject = stream
-        } catch(err){
-            console.log(err)
-            console.error(err)
-        }
-
-        dispatch(callSettingReducer({
-            userSettings: {
-                isPresenting: false,
-                isFullScreen: false
-            }
-        }))
-
-        if(peer){
+        if(!isClosing){
             try {
-                peer.replaceTrack(
-                    screenCastStream.getVideoTracks()[0],
-                    stream.getVideoTracks()[0],
-                    stream
-                );
+                userVideo.current.srcObject = stream
             } catch(err){
                 console.log(err)
+                console.error(err)
+            }
+    
+            dispatch(callSettingReducer({
+                userSettings: {
+                    isPresenting: false,
+                    isFullScreen: false
+                }
+            }))
+    
+            if(peer){
                 try {
-                    var previousStream = stream.getVideoTracks()[0];
-                    peer.replaceTrack(previousStream)
+                    peer.replaceTrack(
+                        screenCastStream.getVideoTracks()[0],
+                        stream.getVideoTracks()[0],
+                        stream
+                    );
                 } catch(err){
                     console.log(err)
-                    informationManager({purpose: 'error', message: "Could not replace video track, please reload the page"})
+                    try {
+                        var previousStream = stream.getVideoTracks()[0];
+                        peer.replaceTrack(previousStream)
+                    } catch(err){
+                        console.log(err)
+                        informationManager({purpose: 'error', message: "Could not replace video track, please reload the page"})
+                    }
                 }
             }
-        }
 
-        //Emit event
-        if(peerObject){
-            socket.emit('call-message', {
-                purpose: 'screen-sharing',
-                isSharing: false,
-                room: peerObject.id
-            })
+            //Emit event
+            if(peerObject){
+                socket.emit('call-message', {
+                    purpose: 'screen-sharing',
+                    isSharing: false,
+                    room: peerObject.id
+                })
+            }
+        } else {
+            dispatch(callSettingsReset())
+            var message = data.reason ? data.reason : `Call closed by: ${data.name}`
+            informationManager({purpose: 'information', message: message})
         }
     }
 

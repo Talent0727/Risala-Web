@@ -15,10 +15,6 @@ export default function InformationWindow({}){
         })
     }, [])
 
-    useEffect(() => {
-        console.log(MESSAGES)
-    }, [MESSAGES])
-
     function mutationObserver(mutation){
         mutation.forEach((newMessage) => {
             if(newMessage.type === "childList"){

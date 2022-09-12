@@ -2,11 +2,11 @@ import store from "../features/store";
 import { chatReducer } from "../features/chat";
 import { callSettingReducer } from "../features/callSettings";
 
-const state         =   store.getState().chatReducer.value
-const callSettings  =   store.getState().callSettingReducer
-const USER_DATA     =   state.USER_DATA
+function callInit(data, socket){
+    const state         =   store.getState().chatReducer.value
+    const callSettings  =   store.getState().callSettingReducer
+    const USER_DATA     =   state.USER_DATA
 
-function callInit(data, socket, state){
     if(!data.initiator && !callSettings.isActive){
         store.dispatch(callSettingReducer({...data}))
     } else if(callSettings.id !== data.id) {
@@ -23,6 +23,10 @@ function callInit(data, socket, state){
 }
 
 function callJoin(data){
+    const state         =   store.getState().chatReducer.value
+    const callSettings  =   store.getState().callSettingReducer
+    const USER_DATA     =   state.USER_DATA
+
     store.dispatch(callSettingReducer({
         signalData: data.signal,
         joined: [...store.getState().callSettingReducer.joined, data.joined]

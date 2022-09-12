@@ -64,14 +64,9 @@ export default function Index(){
 
             //Call routes
             socket.on('call-init', (data) => { 
-                callInit(data, socket, callSettings) 
+                callInit(data, socket) 
             })
             socket.on('call-join', callJoin)
-            socket.on('call-closed', (data) => {
-                dispatch(callSettingsReset())
-                var message = data.reason ? data.reason : `Call closed by: ${data.name}`
-                informationManager({purpose: 'information', message: message})
-            })
         }
 
         return(() => {
