@@ -54,10 +54,8 @@ export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTi
             id: callSettings.id,
             user_id: USER_DATA.account_id,
             name: `${USER_DATA.firstname} ${USER_DATA.lastname}`,
-            room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id)
+            room: callSettings.joined.filter(e => e !== USER_DATA.account_id)
         })
-
-        peer = null;
 
         if(callSettings.initiator && peerObject){
             callMessage(socket, callSettings, timeStamp)

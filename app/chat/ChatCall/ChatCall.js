@@ -88,7 +88,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             socket.on('call-error', (data) => {
                 console.log('************** Call ERROR *******************')
                 dispatch(chatReducer({
-                    MESSAGS: [...MESSAGES, {purpose: 'error', message: `An error occured by your peer: ${data.error}`}],
+                    MESSAGES: [...MESSAGES, {purpose: 'error', message: `An error occured by your peer: ${data.error}`}],
                 }))
                 callTerminated()
             })
@@ -96,9 +96,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 console.log('call-closed recieved', data)
                 dispatch(callSettingsReset())
                 dispatch(chatReducer({
-                    MESSAGE: {
-                        PURPOSE: `Call closed by: ${data.name}`
-                    }
+                    MESSAGES: [...MESSAGES, {purpose: 'information', message: `Call closed by: ${data.name}`}]
                 }))
             })
 
