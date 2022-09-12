@@ -15,6 +15,10 @@ export default function InformationWindow({}){
         })
     }, [])
 
+    useEffect(() => {
+        console.log(MESSAGES)
+    }, [MESSAGES])
+
     function mutationObserver(mutation){
         mutation.forEach((newMessage) => {
             if(newMessage.type === "childList"){
@@ -26,7 +30,6 @@ export default function InformationWindow({}){
                         removeMessage(id)
                     }, 8000);
                 }
-                console.log(newMessage.addedNodes[0])
             }
         })
     }

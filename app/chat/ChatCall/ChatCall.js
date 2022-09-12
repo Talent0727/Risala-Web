@@ -281,13 +281,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
                     } else {
                         informationManager({purpose: 'error', message: `${err.message} Please grant microphone access in order to continue.`})
-
-                        try {
-                            //initWebRTC(true)
-                        } catch(err){
-                            informationManager({purpose: 'error', message: err.message})
-                            dispatch(callSettingsReset())
-                        }
                     }
                 } else if(err.message === "Requested device not found" && callSettings.purpose === "video"){
                     console.log("Error with video and camera access")

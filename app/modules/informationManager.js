@@ -2,10 +2,10 @@ import store from "../features/store";
 import { chatReducer } from "../features/chat";
 import { v4 as uuidv4 } from "uuid";
 
-const state = store.getState().chatReducer.value 
-const MESSAGES = state.MESSAGES
-
 export default function informationManager(value){
+    const state = store.getState().chatReducer.value 
+    const MESSAGES = state.MESSAGES
+
     var object = {
         ...value,
         id: uuidv4()
