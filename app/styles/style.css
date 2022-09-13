@@ -6347,6 +6347,13 @@ a:active {
     transform: initial;
   }
 }
+.focused-message {
+  margin: 10px;
+}
+
+@-webkit-keyframes focusMessage {}
+
+@keyframes focusMessage {}
 .chat-navbar {
   display: flex;
   flex-direction: row;
@@ -7972,6 +7979,51 @@ a:active {
   background-color: rgb(24, 159, 42);
 }
 
+.call-window.minimised.call {
+  position: absolute;
+  top: 20px;
+  left: calc(50% - 150px);
+  padding: 10px 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  height: 90px;
+  width: 300px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  z-index: 2000;
+}
+.call-window.minimised.call .call-window-main .caller-ui .volume-meter-wrapper {
+  width: 100%;
+  height: 50px;
+}
+.call-window.minimised.call .call-window-main .caller-ui .volume-meter-wrapper figure {
+  margin: 0 8px;
+  width: 40px;
+  height: 40px;
+}
+.call-window.minimised.call .call-window-main .caller-ui .volume-meter-wrapper figure.muted i {
+  font-size: 16px;
+  background-color: rgba(0, 0, 0, 0.4705882353);
+}
+.call-window.minimised.call .call-window-main .caller-ui .volume-meter-wrapper .volume-meter {
+  display: none;
+}
+.call-window.minimised.call .call-window-nav {
+  justify-content: center;
+}
+.call-window.minimised.call .call-window-nav .info-wrapper {
+  display: none;
+}
+.call-window.minimised.call .call-window-nav .call-main-buttons i {
+  font-size: 18px;
+}
+.call-window.minimised.call .call-window-nav .timer {
+  position: absolute;
+  right: 14px;
+  font-size: 14px;
+}
 .message-information-wrapper {
   display: flex;
   flex-direction: column;

@@ -5,6 +5,7 @@ import { callSettingReducer, callSettingsReset } from "../../../features/callSet
 
 // Functions
 import callMessage      from "../../ChatBottom/functions/callMessage";
+import informationManager from "../../../modules/informationManager";
 
 export default function CallNav({ socket, screenShare, stopScreenShare }){
     const dispatch = useDispatch();
@@ -167,6 +168,20 @@ export default function CallNav({ socket, screenShare, stopScreenShare }){
         }
     }
 
+    function minimizeWindow(){
+        if(userSettings.isPresenting){
+            informationManager({purpose: 'information', message: "Call can't be minimised while in presentation mode. Please stop the presentation in order to proceed"})
+        } else if(!callSettings.isMinimised) {
+            dispatch(callSettingReducer({
+                isMinimised: true
+            }))
+        } else if(callSettings.isMinimised){
+            dispatch(callSettingReducer({
+                isMinimised: false
+            }))
+        }
+    }
+
     return(
         <div className="call-window-nav">
             <div className="info-wrapper">
@@ -186,6 +201,13 @@ export default function CallNav({ socket, screenShare, stopScreenShare }){
                 }
             </div>
             <div className="call-main-buttons">
+                <i 
+                    className="material-icons"
+                    onClick={minimizeWindow}
+                    style={callSettings.isMinimised ? {backgroundColor: '#ffffffb3'} : null}
+                >
+                    {!callSettings.isMinimised ? "forum" : "expand"}
+                </i>
                 {
                     callSettings.purpose === "video" &&
                     <>

@@ -3,7 +3,7 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useDispatch, useSelector } from "react-redux";
 import { chatReducer, objectAdd } from "../features/chat";
-import { callSettingReducer, callSettingsReset } from "../features/callSettings";
+import { callSettingReducer } from "../features/callSettings";
 import useLocale from "../hooks/useLocale";
 
 //Components
@@ -23,8 +23,7 @@ import InformationWindow    from "../chat/InformationWindow";
 import { SocketContext }    from "../components/Socket";
 import { postRequest, errorManagement } from "../api/api";
 import { socketTyping, socketRemove, socketMessage, socketExit, socketJoin } from "../api/socketRoutes";
-import { callClosed, callInit, callJoin } from "../api/callSocketRoutes";
-import informationManager from "../modules/informationManager";
+import { callInit, callJoin } from "../api/callSocketRoutes";
 
 export default function Index(){
     const socket = useContext(SocketContext)
@@ -36,7 +35,6 @@ export default function Index(){
     const isMobile = useSelector((state) => state.chatReducer.value.isMobile)
     const chat = useSelector((state) => state.chatReducer.value.chat)
     const callSettings = useSelector((state) => state.callSettingReducer)
-    const MESSAGES = useSelector((state) => state.chatReducer.value.MESSAGES)
 
     //Chat Window States
     const chat_window = useSelector((state) => state.chatReducer.value.chat_window) //Data for the purpose behind popup Window
