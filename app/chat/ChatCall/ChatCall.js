@@ -27,6 +27,8 @@ export default function ChatCall({ locale, current, USER_DATA }){
     const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
     const peerSettings = useSelector((state) => state.callSettingReducer.peerSettings)
+    const timer = useSelector((state) => state.callSettingReducer.timer)
+    const isTimer = useSelector((state) => state.callSettingReducer.isTimer)
 
     const userVideo = useRef(null);
     const peerVideo = useRef(null);
@@ -38,11 +40,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
     // Reserve states
     const [castStream, setCastStream] = useState(undefined)
     const [isMissed, setIsMissed] = useState(true)
-
-    // For timer function
-    const [isTimer, setIsTimer] = useState(false)
-    const [timer, setTimer] = useState(0)
-    const [timeStamp, setTimeStamp] = useState('')
 
     //Socket Events
     useEffect(() => {
@@ -77,7 +74,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     informationManager({purpose: 'error', message: `An error has occurred by your peer: ${err}`})
                     callTerminated(socket)
                 } else if(data.purpose === "reject"){
-                    callMessage(socket, timeStamp, true)
+                    callMessage(socket, true)
                     callTerminated(socket)
                 }
             })
@@ -88,7 +85,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             socket.on('call-closed', (data) => {
                 if(callSettings.initiator){
                     console.log(isMissed)
-                    callMessage(socket, timeStamp, isMissed)
+                    callMessage(socket, isMissed)
                 }
 
                 try {
@@ -116,6 +113,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 informationManager({purpose: 'information', message: message})
             })
         } else if(!callSettings.isActive){
+            console.log("Inactive, remove all socket listeners")
             socket.off('call-message')
             socket.off('call-error')
             socket.off('call-closed')
@@ -137,7 +135,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
         if(timer === 30 && callSettings.isActive){
             if(callSettings.joined.length === 1 && callSettings.initiator){
                 console.log("Triggered missed call")
-                callMessage(socket, timeStamp, true)
+                callMessage(socket, true)
                 callTerminated(socket)
                 socket.emit('call-closed', {
                     id: callSettings.id,
@@ -146,7 +144,9 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id),
                     callSettings: callSettings
                 })
-                setTimer(0)
+                dispatch(callSettingReducer({
+                    timer: 0
+                }))
             }
         } else if(timer === 10 && callSettings.joined.length === 1 && callSettings.initiator && callSettings.isActive){
             var callObject = {
@@ -183,9 +183,11 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
 
     function initiateCall(){
-        setTimeStamp('00:00:00')
-        setIsTimer(true)
-        setTimer(0)
+        dispatch(callSettingReducer({
+            isTimer: true,
+            timer: 0,
+            timeStamp: '00:00:00'
+        }))
 
         setUserPeer(userSettings.userPeer)
 
@@ -248,8 +250,8 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
         // This is correct
         userSettings.userPeer.on('stream', (stream) => {
-            setTimer(0)
             dispatch(callSettingReducer({
+                timer: 0,
                 userSettings: { isMuted: false },
                 peerSettings: { peerStream: stream }
             }))
@@ -288,13 +290,13 @@ export default function ChatCall({ locale, current, USER_DATA }){
         // If the call was interrupted
         userSettings.userPeer.on('close', (err) => {
             console.log(err)
-            callInterrupt(err, timeStamp, socket)
+            callInterrupt(err, socket)
         })
 
         userSettings.userPeer.on('error', (err) => {
             console.log(err)
             informationManager({purpose: 'error', message: err.message ? err.message : err})
-            callInterrupt(err, timeStamp, socket)
+            callInterrupt(err, socket)
         })
     }
 
@@ -331,14 +333,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     <CallNav 
                         screenShare={screenShare}
                         stopScreenShare={stopScreenShare}
-                        isTimer={isTimer}
-                        timeStamp={timeStamp}
-                        setTimeStamp={setTimeStamp}
-                        timer={timer}
-                        setTimer={setTimer}
                         socket={socket}
-                        setIsTimer={setIsTimer}
-                        userVideo={userVideo}
                     />
                 </div>
             }

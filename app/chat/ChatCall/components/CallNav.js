@@ -6,13 +6,16 @@ import { callSettingReducer, callSettingsReset } from "../../../features/callSet
 // Functions
 import callMessage      from "../../ChatBottom/functions/callMessage";
 
-export default function CallNav({ isTimer, timeStamp, setTimeStamp, timer, setTimer, socket, setIsTimer, screenShare, stopScreenShare }){
+export default function CallNav({ socket, screenShare, stopScreenShare }){
     const dispatch = useDispatch();
     const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
     const peerSettings = useSelector((state) => state.callSettingReducer.peerSettings)
     const current = useSelector((state) => state.chatReducer.value.current)
     const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
+    const timer = useSelector((state) => state.callSettingReducer.timer)
+    const isTimer = useSelector((state) => state.callSettingReducer.isTimer)
+    const timeStamp = useSelector((state) => state.callSettingReducer.timeStamp)
 
     const [group, setGroup] = useState(undefined)
     const [alias, setAlias] = useState(undefined)
@@ -95,8 +98,6 @@ export default function CallNav({ isTimer, timeStamp, setTimeStamp, timer, setTi
         }
 
         dispatch(callSettingsReset())
-        setIsTimer(false)
-        setTimer(0)
     }
 
     useEffect(() => {
@@ -144,8 +145,10 @@ export default function CallNav({ isTimer, timeStamp, setTimeStamp, timer, setTi
                 var minutes = `0${minutes}`.slice(-2)
                 var seconds = `0${seconds}`.slice(-2)
                 
-                setTimeStamp(`${hours}:${minutes}:${seconds}`)
-                setTimer(timer + 1)
+                dispatch(callSettingReducer({
+                    timeStamp: `${hours}:${minutes}:${seconds}`,
+                    timer: timer + 1
+                }))
             }, 1000)
         }
 

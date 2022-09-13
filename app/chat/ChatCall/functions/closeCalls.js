@@ -47,7 +47,7 @@ export function callTerminated(socket){
     store.dispatch(callSettingsReset())
 }
 
-export function callInterrupt(err, timer, socket){
+export function callInterrupt(err, socket){
     const state         =   store.getState().chatReducer.value
     const callSettings  =   store.getState().callSettingReducer
     const userSettings  =   callSettingReducer.userSettings
@@ -55,7 +55,7 @@ export function callInterrupt(err, timer, socket){
 
     console.log(err)
     if(callSettings.initiator){
-        callMessage(socket, timer)
+        callMessage(socket)
     }
     
     if(callSettings.members.length > 1){
