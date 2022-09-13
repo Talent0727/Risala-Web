@@ -574,144 +574,57 @@ export default function ChatCall({ locale, current, USER_DATA }){
             userSettings.screenStream.getVideoTracks().forEach(function (track) {
                 track.stop();
             });
-
-            if(peerOvertake){
-                dispatch(callSettingReducer({
-                    userSettings: {
-                        isFullScreen: false,
-                        isPresenting: false
-                    },
-                    peerSettings: { isPresenting: true }
-                }))
-            }
         } catch(err) {
+            try {
+                screenCastStreamSaver.getVideoTracks().forEach(function (track) {
+                    track.stop();
+                });
+            } catch(err) {
+                console.log(err)
+                informationManager({purpose: 'error', message: err.message})
+            }
+        }
+
+        try {
+            userVideo.current.srcObject = userSettings.userStream
+        } catch(err){
             console.log(err)
             console.error(err)
-
-            if(userSettings.screenStream){
-                try {
-                    userSettings.screenStream.getVideoTracks().forEach(function (track) {
-                        track.stop();
-                    });
-                } catch(err){
-                    console.log(err)
-                }
-            } else {
-                try {
-                    screenCastStreamSaver.getVideoTracks().forEach(function (track) {
-                        track.stop();
-                    });
-                } catch(err) {
-                    console.log(err)
-                    informationManager({purpose: 'error', message: err.message})
-                }
-            }
-        }
-
-        if(peerOvertake){
-            if(userSettings.userPeer){
-                if(userSettings.screenStream){
-                    try {
-                        userSettings.userPeer.replaceTrack(
-                            userSettings.screenStream.getVideoTracks()[0],
-                            userSettings.userStream.getVideoTracks()[0],
-                            userSettings.userStream
-                        );
-                    } catch (err){
-                        informationManager({purpose: 'error', message: err.message})
-                    }
-                } else if(castStream){
-                    try {
-                        userSettings.userPeer.replaceTrack(
-                            castStream.getVideoTracks()[0],
-                            userSettings.userStream.getVideoTracks()[0],
-                            userSettings.userStream
-                        );
-                    } catch (err){
-                        informationManager({purpose: 'error', message: err.message})
-                    }
-                } else {
-                    try {
-                        userSettings.userPeer.replaceTrack(
-                            screenCastStreamSaver.getVideoTracks()[0],
-                            userSettings.userStream.getVideoTracks()[0],
-                            userSettings.userStream
-                        );
-                    } catch (err){
-                        informationManager({purpose: 'error', message: err.message})
-                    }
-                }
-            } else {
-                informationManager({purpose: 'error', message: "Peer could not be found! Please close the call and reload the page"})
-            }
-    
-    
-            //Emit event
-            if(peerSettings.peerObject){
-                socket.emit('call-message', {
-                    purpose: 'screen-sharing',
-                    isSharing: false,
-                    room: peerSettings.peerObject.id
-                })
-            }
-
-            dispatch(callSettingReducer({
-                userSettings: {
-                    isFullScreen: false,
-                    isPresenting: false
-                },
-                peerSettings: { isPresenting: true }
-            }))
+            informationManager({purpose: 'error', message: err.message})
         }
     
-        if(!isClosing && !peerOvertake){
+
+        dispatch(callSettingReducer({
+            userSettings: {
+                isPresenting: false,
+                isFullScreen: false
+            }
+        }))
+    
+        // Replace the stream for your peer
+        try {
+            userSettings.userPeer.replaceTrack(
+                userSettings.screenStream.getVideoTracks()[0],
+                userSettings.userStream.getVideoTracks()[0],
+                userSettings.userStream
+            );
+        } catch(err){
+            console.log(err)
             try {
-                userVideo.current.srcObject = userSettings.userStream
+                userSettings.userPeer.replaceTrack(userSettings.userStream.getVideoTracks()[0])
             } catch(err){
                 console.log(err)
-                console.error(err)
+                informationManager({purpose: 'error', message: "Could not replace video track, please reload the page"})
             }
-        
-    
-            dispatch(callSettingReducer({
-                userSettings: {
-                    isPresenting: false,
-                    isFullScreen: false
-                }
-            }))
-        
-    
-            if(userSettings.userPeer){
-                try {
-                    userSettings.userPeer.replaceTrack(
-                        userSettings.screenStream.getVideoTracks()[0],
-                        userSettings.userStream.getVideoTracks()[0],
-                        userSettings.userStream
-                    );
-                } catch(err){
-                    console.log(err)
-                    try {
-                        userSettings.userPeer.replaceTrack(userSettings.userStream.getVideoTracks()[0])
-                    } catch(err){
-                        console.log(err)
-                        informationManager({purpose: 'error', message: "Could not replace video track, please reload the page"})
-                    }
-                }
-            }
-    
-    
-            //Emit event
-            if(peerSettings.peerObject){
-                socket.emit('call-message', {
-                    purpose: 'screen-sharing',
-                    isSharing: false,
-                    room: peerSettings.peerObject.id
-                })
-            }
-        } else {
-            dispatch(callSettingsReset())
-            var message = data.reason ? data.reason : `Call closed by: ${data.name}`
-            informationManager({purpose: 'information', message: message})
+        }
+
+        //Emit event
+        if(peerSettings.peerObject){
+            socket.emit('call-message', {
+                purpose: 'screen-sharing',
+                isSharing: false,
+                room: peerSettings.peerObject.id
+            })
         }
     }
 }

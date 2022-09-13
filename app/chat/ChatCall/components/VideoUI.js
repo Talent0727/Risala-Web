@@ -9,12 +9,6 @@ export default function VideoUI({ socket, peerVideo, userVideo }){
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
     const peerSettings = useSelector((state) => state.callSettingReducer.peerSettings)
 
-    useEffect(() => {
-        if(userSettings.isPresenting && peerSettings.isPresenting){
-            
-        }
-    }, [userSettings.isPresenting, peerSettings.isPresenting])
-
     // This is if you put the presenter in fullscreen.
     // Do not confuse with the other fullscreen setting which is who has the larger screen
     const [fullScreen, setFullScreen] = useState(false) 
@@ -28,6 +22,68 @@ export default function VideoUI({ socket, peerVideo, userVideo }){
         backgroundColor: '#000',
         zIndex: 20,
         border: 'none'
+    }
+
+    useEffect(() => {
+        if(userSettings.isPresenting && peerSettings.isPresenting){
+            peerScreenOvertake()
+        }
+    }, [userSettings.isPresenting, peerSettings.isPresenting])
+
+    function peerScreenOvertake(){
+        if(userSettings.userPeer){
+            if(userSettings.screenStream){
+                try {
+                    userSettings.userPeer.replaceTrack(
+                        userSettings.screenStream.getVideoTracks()[0],
+                        userSettings.userStream.getVideoTracks()[0],
+                        userSettings.userStream
+                    );
+                } catch (err){
+                    informationManager({purpose: 'error', message: err.message})
+                }
+            } else if(castStream){
+                try {
+                    userSettings.userPeer.replaceTrack(
+                        castStream.getVideoTracks()[0],
+                        userSettings.userStream.getVideoTracks()[0],
+                        userSettings.userStream
+                    );
+                } catch (err){
+                    informationManager({purpose: 'error', message: err.message})
+                }
+            } else {
+                try {
+                    userSettings.userPeer.replaceTrack(
+                        screenCastStreamSaver.getVideoTracks()[0],
+                        userSettings.userStream.getVideoTracks()[0],
+                        userSettings.userStream
+                    );
+                } catch (err){
+                    informationManager({purpose: 'error', message: err.message})
+                }
+            }
+        } else {
+            informationManager({purpose: 'error', message: "Peer could not be found! Please close the call and reload the page"})
+        }
+
+
+        //Emit event
+        if(peerSettings.peerObject){
+            socket.emit('call-message', {
+                purpose: 'screen-sharing',
+                isSharing: false,
+                room: peerSettings.peerObject.id
+            })
+        }
+
+        dispatch(callSettingReducer({
+            userSettings: {
+                isFullScreen: false,
+                isPresenting: false
+            },
+            peerSettings: { isPresenting: true }
+        }))
     }
 
     return(
