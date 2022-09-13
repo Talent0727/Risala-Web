@@ -31,7 +31,7 @@ export default function CallerWindow({ socket }){
             dispatch(callSettingsReset())
         })
 
-        function initCall(stream){
+        function initCall(stream, cameraError = false){
             const peer = new Peer({
                 initiator: false,
                 trickle: false,
@@ -43,7 +43,8 @@ export default function CallerWindow({ socket }){
                 joined: [...callSettings.joined, USER_DATA.account_id],
                 signalData: callSettings.signalData,
                 userSettings: {
-                    isCam: callSettings.purpose === "video" ? true : false,
+                    isCam: (callSettings.purpose === "video" && !cameraError) ? true : false,
+                    isCamError: cameraError ? true : false,
                     isMuted: false,
                     userPeer: peer,
                     userStream: stream

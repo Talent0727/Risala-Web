@@ -153,14 +153,17 @@ export default function ChatCall({ locale, current, USER_DATA }){
     }, [callSettings.isInCall, callSettings.isActive])
 
     useEffect(() => {
-        if((userPeer || peer || userSettings.userPeer) && callSettings.signalData && callSettings.initiator){
-            if(userSettings.userPeer){
+        if((userPeer || userSettings.userPeer) && callSettings.signalData && callSettings.initiator){
+            try {
                 userSettings.userPeer.signal(callSettings.signalData)
-            } else if(userPeer){
-                userPeer.signal(callSettings.signalData)
+            } catch {
+                try {
+                    userPeer.signal(callSettings.signalData)
+                } catch (err){
+                    informationManager({purpose: 'error', message: err.message})
+                    callTerminated(socket)
+                }
             }
-
-            console.log(peer, userPeer, callSettings.userPeer)
         }
     }, [callSettings.userPeer, userPeer, callSettings.signalData])
 
@@ -568,7 +571,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
         // Try to close down casStream
         try {
-            userSettings.castStream.getVideoTracks().forEach(function (track) {
+            userSettings.screenStream.getVideoTracks().forEach(function (track) {
                 track.stop();
             });
 
@@ -585,9 +588,9 @@ export default function ChatCall({ locale, current, USER_DATA }){
             console.log(err)
             console.error(err)
 
-            if(castStream){
+            if(userSettings.screenStream){
                 try {
-                    castStream.getVideoTracks().forEach(function (track) {
+                    userSettings.screenStream.getVideoTracks().forEach(function (track) {
                         track.stop();
                     });
                 } catch(err){

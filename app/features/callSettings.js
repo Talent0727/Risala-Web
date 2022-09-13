@@ -11,6 +11,7 @@ const initialState = {
     initiatorID: undefined,
     userSettings: {
         isCam: false,
+        isCamError: false,
         isMuted: false,
         isPresenting: false,
         isFullScreen: false,

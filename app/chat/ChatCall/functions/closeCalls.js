@@ -25,7 +25,8 @@ export function callTerminated(socket){
 
     try {
         userSettings.userPeer.destroy()
-    } catch{
+    } catch(err){
+        console.log(err)
     }
 
     store.dispatch(callSettingsReset())
@@ -42,11 +43,13 @@ export function callInterrupt(err, timer, socket){
         callMessage(socket, callSettings, timer)
     }
     
-    socket.emit('call-error', {
-        userID: USER_DATA.account_id,
-        message: err,
-        room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id)
-    })
+    if(callSettings.members.length > 1){
+        socket.emit('call-error', {
+            userID: USER_DATA.account_id,
+            message: err,
+            room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id)
+        })
+    }
 
     try {
         if(userSettings.userStream){
@@ -66,7 +69,8 @@ export function callInterrupt(err, timer, socket){
 
     try {
         userSettings.userPeer.destroy()
-    } catch{
+    } catch(err){
+        console.log(err)
     }
 
     store.dispatch(callSettingsReset())

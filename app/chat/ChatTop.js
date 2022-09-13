@@ -458,7 +458,7 @@ export default function  ChatTop({setWidth, socket}){
             console.log(err)
         })
 
-        function initCall(stream){
+        function initCall(stream, cameraError = false){
             const peer = new Peer({
                 initiator: true,
                 trickle: false,
@@ -474,7 +474,8 @@ export default function  ChatTop({setWidth, socket}){
                 initiator: true,
                 initiatorID: USER_DATA.account_id,
                 userSettings: {
-                    isCam: type === "video" ? true : false,
+                    isCam: (type === "video" && !cameraError) ? true : false,
+                    isCamError: cameraError ? true : false,
                     isMuted: false,
                     userPeer: peer,
                     userStream: stream
