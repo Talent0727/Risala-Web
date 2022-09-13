@@ -9,6 +9,9 @@ const initialState = {
     joined: [],
     initiator: false,
     initiatorID: undefined,
+    isTimer: false,
+    timer: 0,
+    timeStamp: '',
     userSettings: {
         isCam: false,
         isCamError: false,

@@ -4,7 +4,7 @@ import { callSettingReducer } from "../../../features/callSettings";
 import getCurrentTime from "../../../modules/time";
 import { v4 as uuidv4 } from 'uuid';
 
-export default function callMessage(socket, callTime = null, isMissed = false){
+export default function callMessage(socket, isMissed = false){
     const state = store.getState().chatReducer.value
     const callSettings = store.getState().callSettingReducer
     const chats = state.chats
@@ -17,11 +17,11 @@ export default function callMessage(socket, callTime = null, isMissed = false){
 
     var textObject = {
         purpose: callSettings.purpose,
-        time: callTime
+        time: callSettings.timeStamp
     }
 
     // Was the call misssed? In that case add it to the object
-    if(callSettings.joined.length < 2){
+    if(callSettings.joined.length === 1){
         textObject.isMissed = true
     }
 
