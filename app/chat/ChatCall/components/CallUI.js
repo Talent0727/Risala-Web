@@ -18,19 +18,19 @@ export default function CallUI({ peerObject, peerAudio}){
                 </figure>
                 <div className="volume-meter" data-value=""></div>
                 {
-                    !peerObject &&
+                    !peerSettings.peerObject &&
                     <span style={{position: "absolute", bottom: "-40px"}}>Ringing...</span>
                 }
             </div>
             {
-                peerObject &&
+                peerSettings.peerObject &&
                 <div className="volume-meter-wrapper">
                     <figure className={peerSettings.isMuted ? "muted" : null}>
                         {
                             peerSettings.isMuted &&
                             <i className="material-icons">mic_off</i>
                         }
-                        <img src={ peerObject.profile_picture ? peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
+                        <img src={ peerSettings.peerObject.profile_picture ? peerSettings.peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
                     </figure>
                     <div className="volume-meter" data-value=""></div>
                 </div>

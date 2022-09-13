@@ -4,6 +4,7 @@ import { chatReducer, user_search_remove } from "../features/chat";
 import { callSettingReducer } from "../features/callSettings";
 import { postRequest, errorManagement } from "../api/api";
 import informationManager from "../modules/informationManager";
+import Peer from 'simple-peer'
 
 export default function  ChatTop({setWidth, socket}){
     const dispatch = useDispatch();
@@ -446,8 +447,8 @@ export default function  ChatTop({setWidth, socket}){
     // Triggers ChatCall.js
     function callClick(type){
         navigator.mediaDevices.getUserMedia({
-            video: type === "video" ? true : false,
-            audio: true
+            audio: true,
+            video: type === "video" ? true : false
         })
         .then((stream) => {
             initCall(stream)
@@ -457,7 +458,12 @@ export default function  ChatTop({setWidth, socket}){
             console.log(err)
         })
 
-        function initCall(stream){
+        function initCall(stream, cameraError = false){
+            const peer = new Peer({
+                initiator: true,
+                trickle: false,
+                stream: stream
+            })
             dispatch(callSettingReducer({
                 isActive: true,
                 isInCall: true,
@@ -466,12 +472,12 @@ export default function  ChatTop({setWidth, socket}){
                 members: [...current.members],
                 joined: [USER_DATA.account_id],
                 initiator: true,
-                initiatorID: USER_DATA.account_id
-            }))
-            dispatch(callSettingReducer({
+                initiatorID: USER_DATA.account_id,
                 userSettings: {
                     isCam: type === "video" ? true : false,
+                    isCamError: cameraError ? true : false,
                     isMuted: false,
+                    userPeer: peer,
                     userStream: stream
                 }
             }))

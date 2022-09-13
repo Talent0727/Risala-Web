@@ -1,9 +1,10 @@
-import React, { useState, usState } from "react"
+import React, { useEffect, useState, usState } from "react"
 import { callSettingReducer } from "../../../features/callSettings"
 import { chatReducer } from "../../../features/chat"
-import { useSelector } from "react-redux"
+import { useSelector, useDispatch } from "react-redux"
 
-export default function VideoUI({ peerObject, peerVideo, userVideo }){
+export default function VideoUI({ socket, peerVideo, userVideo }){
+    const dispatch = useDispatch();
     const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
     const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
@@ -13,6 +14,7 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
     // Do not confuse with the other fullscreen setting which is who has the larger screen
     const [fullScreen, setFullScreen] = useState(false) 
 
+    // Style component
     const fullScreenStyle = {
         top: 0,
         left: 0,
@@ -21,6 +23,68 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
         backgroundColor: '#000',
         zIndex: 20,
         border: 'none'
+    }
+
+    useEffect(() => {
+        if(userSettings.isPresenting && peerSettings.isPresenting){
+            peerScreenOvertake()
+        }
+    }, [userSettings.isPresenting, peerSettings.isPresenting])
+
+    // Whenever you are presenting, and peer starts presenting, the peer takes over
+    // Same applies for your peer if the opposite happens
+    function peerScreenOvertake(){
+        if(userSettings.userPeer){
+            if(userSettings.screenStream){
+                try {
+                    userSettings.userPeer.replaceTrack(
+                        userSettings.screenStream.getVideoTracks()[0],
+                        userSettings.userStream.getVideoTracks()[0],
+                        userSettings.userStream
+                    );
+                    userSettings.screenStream.getVideoTracks().forEach(function (track) {
+                        track.stop();
+                    });
+                    userVideo.current.srcObject = userSettings.userStream
+                } catch (err){
+                    informationManager({purpose: 'error', message: err.message})
+                }
+            } else if(castStream){
+                try {
+                    userSettings.userPeer.replaceTrack(
+                        castStream.getVideoTracks()[0],
+                        userSettings.userStream.getVideoTracks()[0],
+                        userSettings.userStream
+                    );
+                    castStream.getVideoTracks().forEach(function (track) {
+                        track.stop();
+                    });
+                    userVideo.current.srcObject = userSettings.userStream
+                } catch (err){
+                    informationManager({purpose: 'error', message: err.message})
+                }
+            }
+        } else {
+            informationManager({purpose: 'error', message: "Peer could not be found! Please close the call and reload the page"})
+        }
+
+
+        //Emit event
+        if(peerSettings.peerObject){
+            socket.emit('call-message', {
+                purpose: 'screen-sharing',
+                isSharing: false,
+                room: peerSettings.peerObject.id
+            })
+        }
+
+        dispatch(callSettingReducer({
+            userSettings: {
+                isFullScreen: false,
+                isPresenting: false
+            },
+            peerSettings: { isPresenting: true }
+        }))
     }
 
     return(
@@ -42,10 +106,10 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                         peerSettings.isPresenting &&
                         <>
                             <figure>
-                                <img src={ peerObject.profile_picture ? peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
+                                <img src={ peerSettings.peerObject.profile_picture ? peerSettings.peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
                             </figure>
                             <span>
-                                {`${peerObject.firstname} ${peerObject.lastname} is presenting`}
+                                {`${peerSettings.peerObject.firstname} ${peerSettings.peerObject.lastname} is presenting`}
                             </span>
                         </>
                     }
@@ -56,9 +120,9 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                 style={ fullScreen ? fullScreenStyle : null }
             >
                 {
-                    (!peerSettings.isCam && peerObject && !peerSettings.isPresenting) &&
+                    (!peerSettings.isCam && peerSettings.peerObject && !peerSettings.isPresenting) &&
                     <figure>
-                        <img src={ peerObject.profile_picture ? peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
+                        <img src={ peerSettings.peerObject.profile_picture ? peerSettings.peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
                     </figure>
                 }
                 <div className="video-wrapper">
@@ -80,8 +144,8 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                         }
                     </div>
                     {
-                        peerObject &&
-                        <span>{`${peerObject.firstname} ${peerObject.lastname}`}</span>
+                        peerSettings.peerObject &&
+                        <span>{`${peerSettings.peerObject.firstname} ${peerSettings.peerObject.lastname}`}</span>
                     }
                     {
                         peerSettings.isPresenting &&

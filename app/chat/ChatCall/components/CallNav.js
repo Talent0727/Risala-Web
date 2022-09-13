@@ -2,9 +2,11 @@ import React, {useEffect, useState} from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatReducer } from "../../../features/chat";
 import { callSettingReducer, callSettingsReset } from "../../../features/callSettings";
-import callMessage from "../../ChatBottom/functions/callMessage";
 
-export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTimer, timeStamp, setTimeStamp, timer, setTimer, socket, stream, peerObject, peer, setIsTimer, setUserPeer }){
+// Functions
+import callMessage      from "../../ChatBottom/functions/callMessage";
+
+export default function CallNav({ isTimer, timeStamp, setTimeStamp, timer, setTimer, socket, setIsTimer, screenShare, stopScreenShare }){
     const dispatch = useDispatch();
     const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
@@ -17,20 +19,44 @@ export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTi
     const [loading, setLoading] = useState(true)
     const [nickname, setNickname] = useState(undefined)
 
+    function stopCamera(){
+        //if(userSettings.isPresenting){
+        //    userSettings.screenStream.getVideoTracks().forEach(function (track) {
+        //        track.stop();
+        //    });
+        //}
+
+        if(userSettings.isCam){
+            userSettings.userStream.getTracks()[1].enabled = false
+        } else { //You go from hidden camera to visible camera
+            userSettings.userStream.getTracks()[1].enabled = true
+        }
+
+        if(peerSettings.peerObject){
+            console.log(peerSettings.peerObject)
+            socket.emit('call-message', {
+                purpose: 'camera',
+                enabled: !userSettings.isCam,
+                room: peerSettings.peerObject.id
+            })
+        }
+        dispatch(callSettingReducer({userSettings:{ isCam: !userSettings.isCam}}))
+    }
+
     function muteMic(){
         //You are at the moment muted, muted -> unmuted
         if(userSettings.isMuted){
-            stream.getTracks()[0].enabled = true
+            userSettings.userStream.getTracks()[0].enabled = true
         } else { //You go from unmuted to muted
-            stream.getTracks()[0].enabled = false
+            userSettings.userStream.getTracks()[0].enabled = false
         }
 
         try{
-            if(peerObject){
+            if(peerSettings.peerObject){
                 socket.emit('call-message', {
                     purpose: 'microphone',
                     enabled: !userSettings.isMuted,
-                    room: peerObject.id
+                    room: peerSettings.peerObject.id
                 })
             }
             dispatch(callSettingReducer({
@@ -45,8 +71,8 @@ export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTi
 
     // Initiated if YOU hang up
     function hangUp(){
-        if(stream){
-            stream.getTracks().forEach(function(track) {
+        if(userSettings.useStream){
+            userSettings.userStream.getTracks().forEach(function(track) {
                 track.stop();
             });
         }
@@ -58,12 +84,11 @@ export default function CallNav({ screenShare, stopScreenShare, stopCamera, isTi
             room: callSettings.joined.filter(e => e !== USER_DATA.account_id)
         })
 
-        if(callSettings.initiator && peerObject){
+        if(callSettings.initiator && peerSettings.peerObject){
             callMessage(socket, callSettings, timeStamp)
         }
 
         dispatch(callSettingsReset())
-        setUserPeer(undefined)
         setIsTimer(false)
         setTimer(0)
     }

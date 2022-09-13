@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatReducer } from "../../../features/chat";
 import { callSettingReducer, callSettingsReset } from "../../../features/callSettings";
+import informationManager from "../../../modules/informationManager";
+import Peer from "simple-peer";
 
 export default function CallerWindow({ socket }){
     const dispatch = useDispatch();
@@ -9,11 +11,46 @@ export default function CallerWindow({ socket }){
     const callSettings = useSelector((state) => state.callSettingReducer)
 
     function acceptCall(){
-        dispatch(callSettingReducer({
-            isInCall: true,
-            joined: [...callSettings.joined, USER_DATA.account_id],
-            signalData: callSettings.signalData
-        }))
+        navigator.mediaDevices.getUserMedia({
+            audio: true,
+            video: callSettings.purpose === "video" ? true : false
+        })
+        .then((stream) => {
+            initCall(stream)
+        })
+        .catch((err) => {
+            informationManager({purpose: 'error', message: `${err.message} Please allow your browser to access the camera/microphone.`})
+            console.log(err)
+            socket.emit('call-closed', {
+                id: callSettings.id,
+                user_id: USER_DATA.account_id,
+                name: `${USER_DATA.firstname} ${USER_DATA.lastname}`,
+                reason: `Call could not be initiated due to permission issues regarding camera/microphone by peer ${USER_DATA.firstname}`,
+                room: callSettings.joined.filter(e => e.id !== USER_DATA.account_id)
+            })
+            dispatch(callSettingsReset())
+        })
+
+        function initCall(stream, cameraError = false){
+            const peer = new Peer({
+                initiator: false,
+                trickle: false,
+                stream: stream
+            })
+
+            dispatch(callSettingReducer({
+                isInCall: true,
+                joined: [...callSettings.joined, USER_DATA.account_id],
+                signalData: callSettings.signalData,
+                userSettings: {
+                    isCam: (callSettings.purpose === "video" && !cameraError) ? true : false,
+                    isCamError: cameraError ? true : false,
+                    isMuted: false,
+                    userPeer: peer,
+                    userStream: stream
+                }
+            }))
+        }
     }
 
     function rejectCall(){
