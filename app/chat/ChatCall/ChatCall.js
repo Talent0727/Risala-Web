@@ -15,8 +15,11 @@ import VideoUI          from "./components/VideoUI";
 // Functions
 import callMessage      from "../ChatBottom/functions/callMessage"
 import volumeMeterInit  from "./functions/volumeMeterInit";
+import { callTerminated, callInterrupt } from "./functions/closeCalls";
 
 var peer; // Should peer become a state?
+let screenSharing = false;
+let screenCastStreamSaver;
 
 export default function ChatCall({ locale, current, USER_DATA }){
     const dispatch = useDispatch();
@@ -24,19 +27,16 @@ export default function ChatCall({ locale, current, USER_DATA }){
     const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
     const peerSettings = useSelector((state) => state.callSettingReducer.peerSettings)
-    const MESSAGES = useSelector((state) => state.chatReducer.value.MESSAGES)
 
     const userVideo = useRef(null);
     const peerVideo = useRef(null);
     const peerAudio = useRef(null);
 
-    const [stream, setStream] = useState(); // Your stream (audio or video)
-    const [peerStream, setPeerStream] = useState(); //peer stream (audio or video)
-    const [screenCastStream, setScreenCastStream] = useState();
-
     // These are call settings for the PEER
-    const [peerObject, setPeerObject] = useState(undefined)
     const [userPeer, setUserPeer] = useState(undefined)
+
+    // Reserve states
+    const [castStream, setCastStream] = useState(undefined)
 
     // For timer function
     const [isTimer, setIsTimer] = useState(false)
@@ -58,29 +58,32 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     }))
                 } else if(data.purpose === "screen-sharing"){
                     if(data.isSharing){
-                        if(userSettings.isPresenting){
-                            stopScreenShare()
+                        console.log("Peer is presenting now")
+                        if(userSettings.isPresenting || screenSharing){
+                            console.log("Stop presenting")
+                            stopScreenShare(false, true)
+                        } else {
+                            // Remove fullscreen, peer is now presenting
+                            dispatch(callSettingReducer({
+                                userSettings: {
+                                    isFullScreen: false
+                                },
+                                peerSettings: {
+                                    isPresenting: true
+                                }
+                            }))
                         }
-                        dispatch(callSettingReducer({
-                            userSettings: {
-                                isFullScreen: false,
-                                isPresenting: false
-                            },
-                            peerSettings: { isPresenting: true }
-                        }))
                     } else {
                         dispatch(callSettingReducer({
                             peerSettings: { isPresenting: false }
                         }))
                     }
                 } else if(data.purpose === "error"){
-                    dispatch(chatReducer({
-                        MESSAGS: [...MESSAGES, {purpose: 'error', message: `An error has occurred by your peer: ${err}`}],
-                    }))
-                    callTerminated()
+                    informationManager({purpose: 'error', message: `An error has occurred by your peer: ${err}`})
+                    callTerminated(socket)
                 } else if(data.purpose === "reject"){
                     callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, true)
-                    callTerminated()
+                    callTerminated(socket)
                 }
             })
             socket.on('call-error', (data) => {
@@ -88,9 +91,13 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     stopScreenShare(true)
                 } 
                 informationManager({purpose: 'error', message: `An error occured by your peer: ${data.error}`})
-                callTerminated()
+                callTerminated(socket)
             })
             socket.on('call-closed', (data) => {
+                if(callSettings.initiator){
+                    callMessage(socket, callSettings, timeStamp, callSettings.joined.length === 1 ? true : false)
+                }
+
                 if(userSettings.isPresenting){
                     stopScreenShare(true)
                 } else {
@@ -104,11 +111,19 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     // Keep this one
     useEffect(() => {
+        if(callSettings.joined.length === 2){
+            dispatch(callSettingReducer({
+                peerSettings: {
+                    peerObject: callSettings.members.filter(e => e.id !== USER_DATA.account_id)[0]
+                }
+            }))
+        }
+
         if(timer === 30){
             if(callSettings.joined.length === 1 && callSettings.initiator){
                 console.log("Triggered missed call")
                 callMessage(socket, callSettings, timeStamp, true)
-                callTerminated()
+                callTerminated(socket)
                 socket.emit('call-closed', {
                     id: callSettings.id,
                     user_id: USER_DATA.account_id,
@@ -131,16 +146,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
     }, [timer, callSettings.joined])
 
     useEffect(() => {
-
-        if(callSettings.joined.length === 2){
-            setPeerObject(callSettings.members.filter(e => e.id !== USER_DATA.account_id)[0])
-        } else if(callSettings.joined.length === 1){
-            setPeerObject(undefined)
-        }
-
-    }, [callSettings])
-
-    useEffect(() => {
         if(callSettings.isInCall && callSettings.isActive){
             //initWebRTC()
             initiateCall()
@@ -149,10 +154,8 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     useEffect(() => {
         if((userPeer || peer || userSettings.userPeer) && callSettings.signalData && callSettings.initiator){
-            if(userPeer){
-                userPeer.signal(callSettings.signalData)
-            } else if(!userPeer && peer) {
-                peer.signal(callSettings.signalData)
+            if(userSettings.userPeer){
+                userSettings.userPeer.signal(callSettings.signalData)
             }
         }
     }, [userPeer, peer, callSettings.signalData])
@@ -169,7 +172,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
             audio: true
         })
         .then((stream) => {
-            setStream(stream)
             peer = new Peer({
                 initiator: callSettings.initiator,
                 trickle: false,
@@ -274,13 +276,13 @@ export default function ChatCall({ locale, current, USER_DATA }){
             // If the call was interrupted
             peer.on('close', (err) => {
                 console.log(err)
-                callInterupt(err, timeStamp)
+                callInterrupt(err, timeStamp, socket)
             })
 
             peer.on('error', (err) => {
                 console.log(err)
                 informationManager({purpose: 'error', message: err.message ? err.message : err})
-                callInterupt(err, timeStamp)
+                callInterrupt(err, timeStamp, socket)
             })
         })
         .catch((err) => {
@@ -305,7 +307,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                         room: callSettings.members.map(e => e.id)
                     })
                 
-                    callTerminated()
+                    callTerminated(socket)
                 } else if(err.message === "Permission denied"){
                     informationManager({purpose: 'error', message: `${err.message} by you`})
                 }
@@ -317,7 +319,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
         setTimeStamp('00:00:00')
         setIsTimer(true)
         setTimer(0)
-        setStream(userSettings.userStream)
 
         setUserPeer(userSettings.userPeer)
 
@@ -341,9 +342,13 @@ export default function ChatCall({ locale, current, USER_DATA }){
         // If you are not the initiator, then send a signal back to the one who sent the signal to
         // begin with in order to "answer" the signal
         // This is the 2nd signal
-        if(!callSettings.initiator){
-            console.log("Signal")
-            userSettings.userPeer.signal(callSettings.signalData)
+        try {
+            if(!callSettings.initiator){
+                console.log("Signal")
+                userSettings.userPeer.signal(callSettings.signalData)
+            }
+        } catch (err) {
+            informationManager({purpose: 'error', message: err.message})
         }
 
         userSettings.userPeer.on('signal', (signal) => {
@@ -377,7 +382,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
         // This is correct
         userSettings.userPeer.on('stream', (stream) => {
             setTimer(0)
-            setPeerStream(stream)
             dispatch(callSettingReducer({
                 userSettings: { isMuted: false },
                 peerSettings: { peerStream: stream }
@@ -413,25 +417,83 @@ export default function ChatCall({ locale, current, USER_DATA }){
         // If the call was interrupted
         userSettings.userPeer.on('close', (err) => {
             console.log(err)
-            callInterupt(err, timeStamp)
+            callInterrupt(err, timeStamp, socket)
         })
 
         userSettings.userPeer.on('error', (err) => {
             console.log(err)
             informationManager({purpose: 'error', message: err.message ? err.message : err})
-            callInterupt(err, timeStamp)
+            callInterrupt(err, timeStamp, socket)
         })
     }
 
+    return(
+        <>
+            {
+                callSettings.isActive && callSettings.isInCall &&
+                <div className="call-window">
+                    <div className="call-window-main">
+                        {
+                            callSettings.joined.length <= 2 &&
+                            <>
+                                {
+                                    callSettings.purpose === "call" &&
+                                    <CallUI
+                                        peerAudio={peerAudio}
+                                    />
+                                }
+                                {
+                                    callSettings.purpose === "video" &&
+                                    <VideoUI
+                                        socket={socket}
+                                        peerVideo={peerVideo}
+                                        userVideo={userVideo}
+                                    />
+                                }
+                            </>
+                        }
+                        {
+                            (callSettings.initiator && callSettings.joined.length === 1) &&
+                            <audio src="../assets/call_generic_sound.aac" autoPlay loop></audio>
+                        }
+                    </div>
+                    <CallNav 
+                        screenShare={screenShare}
+                        stopScreenShare={stopScreenShare}
+                        isTimer={isTimer}
+                        timeStamp={timeStamp}
+                        setTimeStamp={setTimeStamp}
+                        timer={timer}
+                        setTimer={setTimer}
+                        socket={socket}
+                        setIsTimer={setIsTimer}
+                        userVideo={userVideo}
+                    />
+                </div>
+            }
+            {
+                (callSettings.isActive && !callSettings.initiator && !callSettings.isInCall) &&
+                <CallerWindow socket={socket}/>
+            }
+        </>
+    )
+
     function screenShare(){
+        screenSharing = true;
         navigator.mediaDevices.getDisplayMedia({ cursor: true })
         .then((screenStream) => {
+            setCastStream(screenStream)
+            screenCastStreamSaver = screenStream
             dispatch(callSettingReducer({
                 userSettings: {
-                    screenStream: screenStream
+                    screenStream: screenStream,
+                    isPresenting: true
+                },
+                peerSettings: {
+                    isPresenting: false
                 }
             }))
-
+    
             if(userSettings.userPeer){
                 userSettings.userPeer.replaceTrack(
                     userSettings.userStream.getVideoTracks()[0],
@@ -440,39 +502,25 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 );
                 
                 //Emit event
-                if(peerObject){
+                if(peerSettings.peerObject){
                     socket.emit('call-message', {
                         purpose: 'screen-sharing',
                         isSharing: true,
-                        room: peerObject.id
+                        room: peerSettings.peerObject.id
                     })
                 }
             }
 
-            setScreenCastStream(screenStream)
-            dispatch(callSettingReducer({
-                userSettings: {
-                    isPresenting: true
-                }
-            }))
             userVideo.current.srcObject = screenStream
-
+    
             screenStream.getTracks()[0].onended = (screenCastStream) => {
                 console.log(screenCastStream)
                 try {
-                    if(peer){
-                        peer.replaceTrack(
-                            screenCastStream.currentTarget,
-                            userSettings.userStream.getVideoTracks()[0],
-                            userSettings.userStream
-                        );
-                    } else if(userPeer && !peer){
-                        userPeer.replaceTrack(
-                            screenCastStream.currentTarget,
-                            userSettings.userStream.getVideoTracks()[0],
-                            userSettings.userStream
-                        );
-                    } 
+                    userSettings.userPeer.replaceTrack(
+                        screenCastStream.currentTarget,
+                        userSettings.userStream.getVideoTracks()[0],
+                        userSettings.userStream
+                    );
                     userVideo.current.srcObject = userSettings.userStream
                     dispatch(callSettingReducer({
                         userSettings: {
@@ -496,7 +544,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             console.log(err)
             console.log(err.message)
             console.log(err instanceof DOMException)
-
+    
             if(err instanceof DOMException){
                 //dispatch(chatReducer({
                 //    MESSAGES: [...MESSAGES, {purpose: 'error', message: `${err.message} Please enable screen sharing in your browser`}]
@@ -510,22 +558,113 @@ export default function ChatCall({ locale, current, USER_DATA }){
             }
         })
     }
-    
 
-    function stopScreenShare(isClosing = false){
-        if(userSettings.castStream){
+    function stopScreenShare(isClosing = false, peerOvertake = false){
+        screenSharing = false;
+
+        // Try to close down casStream
+        try {
             userSettings.castStream.getVideoTracks().forEach(function (track) {
                 track.stop();
             });
+
+            if(peerOvertake){
+                dispatch(callSettingReducer({
+                    userSettings: {
+                        isFullScreen: false,
+                        isPresenting: false
+                    },
+                    peerSettings: { isPresenting: true }
+                }))
+            }
+        } catch(err) {
+            console.log(err)
+            console.error(err)
+
+            if(castStream){
+                try {
+                    castStream.getVideoTracks().forEach(function (track) {
+                        track.stop();
+                    });
+                } catch(err){
+                    console.log(err)
+                }
+            } else {
+                try {
+                    screenCastStreamSaver.getVideoTracks().forEach(function (track) {
+                        track.stop();
+                    });
+                } catch(err) {
+                    console.log(err)
+                    informationManager({purpose: 'error', message: err.message})
+                }
+            }
         }
 
-        if(!isClosing){
+        if(peerOvertake){
+            if(userSettings.userPeer){
+                if(userSettings.screenStream){
+                    try {
+                        userSettings.userPeer.replaceTrack(
+                            userSettings.screenStream.getVideoTracks()[0],
+                            userSettings.userStream.getVideoTracks()[0],
+                            userSettings.userStream
+                        );
+                    } catch (err){
+                        informationManager({purpose: 'error', message: err.message})
+                    }
+                } else if(castStream){
+                    try {
+                        userSettings.userPeer.replaceTrack(
+                            castStream.getVideoTracks()[0],
+                            userSettings.userStream.getVideoTracks()[0],
+                            userSettings.userStream
+                        );
+                    } catch (err){
+                        informationManager({purpose: 'error', message: err.message})
+                    }
+                } else {
+                    try {
+                        userSettings.userPeer.replaceTrack(
+                            screenCastStreamSaver.getVideoTracks()[0],
+                            userSettings.userStream.getVideoTracks()[0],
+                            userSettings.userStream
+                        );
+                    } catch (err){
+                        informationManager({purpose: 'error', message: err.message})
+                    }
+                }
+            } else {
+                informationManager({purpose: 'error', message: "Peer could not be found! Please close the call and reload the page"})
+            }
+    
+    
+            //Emit event
+            if(peerSettings.peerObject){
+                socket.emit('call-message', {
+                    purpose: 'screen-sharing',
+                    isSharing: false,
+                    room: peerSettings.peerObject.id
+                })
+            }
+
+            dispatch(callSettingReducer({
+                userSettings: {
+                    isFullScreen: false,
+                    isPresenting: false
+                },
+                peerSettings: { isPresenting: true }
+            }))
+        }
+    
+        if(!isClosing && !peerOvertake){
             try {
                 userVideo.current.srcObject = userSettings.userStream
             } catch(err){
                 console.log(err)
                 console.error(err)
             }
+        
     
             dispatch(callSettingReducer({
                 userSettings: {
@@ -533,6 +672,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     isFullScreen: false
                 }
             }))
+        
     
             if(userSettings.userPeer){
                 try {
@@ -544,21 +684,21 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 } catch(err){
                     console.log(err)
                     try {
-                        var previousStream = userSettings.userStream.getVideoTracks()[0];
-                        userSettings.userPeer.replaceTrack(previousStream)
+                        userSettings.userPeer.replaceTrack(userSettings.userStream.getVideoTracks()[0])
                     } catch(err){
                         console.log(err)
                         informationManager({purpose: 'error', message: "Could not replace video track, please reload the page"})
                     }
                 }
             }
-
+    
+    
             //Emit event
-            if(peerObject){
+            if(peerSettings.peerObject){
                 socket.emit('call-message', {
                     purpose: 'screen-sharing',
                     isSharing: false,
-                    room: peerObject.id
+                    room: peerSettings.peerObject.id
                 })
             }
         } else {
@@ -566,127 +706,5 @@ export default function ChatCall({ locale, current, USER_DATA }){
             var message = data.reason ? data.reason : `Call closed by: ${data.name}`
             informationManager({purpose: 'information', message: message})
         }
-    }
-
-    function stopCamera(){
-        if(userSettings.isPresenting){
-            userSettings.screenStream.getVideoTracks().forEach(function (track) {
-                track.stop();
-            });
-        }
-
-        if(userSettings.isCam){
-            userSettings.userStream.getTracks()[1].enabled = false
-        } else { //You go from unmuted to muted
-            userSettings.userStream.getTracks()[1].enabled = true
-        }
-
-        if(peerObject){
-            socket.emit('call-message', {
-                purpose: 'camera',
-                enabled: !userSettings.isCam,
-                room: peerObject.id
-            })
-        }
-        dispatch(callSettingReducer({userSettings:{ isCam: !userSettings.isCam}}))
-    }
-
-    return(
-        <>
-            {
-                callSettings.isActive && callSettings.isInCall &&
-                <div className="call-window">
-                    <div className="call-window-main">
-                        {
-                            callSettings.joined.length <= 2 &&
-                            <>
-                                {
-                                    callSettings.purpose === "call" &&
-                                    <CallUI
-                                        peerObject={peerObject}
-                                        peerAudio={peerAudio}
-                                    />
-                                }
-                                {
-                                    callSettings.purpose === "video" &&
-                                    <VideoUI
-                                        peerObject={peerObject}
-                                        peerVideo={peerVideo}
-                                        userVideo={userVideo}
-                                    />
-                                }
-                            </>
-                        }
-                        {
-                            (callSettings.initiator && callSettings.joined.length === 1) &&
-                            <audio src="../assets/call_generic_sound.aac" autoPlay loop></audio>
-                        }
-                    </div>
-                    <CallNav 
-                        screenShare={screenShare}
-                        stopScreenShare={stopScreenShare}
-                        stopCamera={stopCamera}
-                        isTimer={isTimer}
-                        timeStamp={timeStamp}
-                        setTimeStamp={setTimeStamp}
-                        timer={timer}
-                        setTimer={setTimer}
-                        socket={socket}
-                        peerObject={peerObject}
-                        setIsTimer={setIsTimer}
-                        setUserPeer={setUserPeer}
-                    />
-                </div>
-            }
-            {
-                (callSettings.isActive && !callSettings.initiator && !callSettings.isInCall) &&
-                <CallerWindow
-                    socket={socket}
-                />
-            }
-        </>
-    )
-
-    function callTerminated(){
-        console.log("Call terminated was triggered")
-        if(userSettings.userStream){
-            userSettings.userStream.getTracks().forEach(function(track) {
-                track.stop();
-            });
-        }
-        socket.emit('call-closed', {
-            id: callSettings.id,
-            user_id: USER_DATA.account_id,
-            name: `${USER_DATA.firstname} ${USER_DATA.lastname}`,
-            room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id)
-        })
-        dispatch(callSettingsReset())
-        setStream(undefined)
-        setPeerStream(undefined)
-        setScreenCastStream(undefined)
-    }
-
-    function callInterupt(err, timer){
-        console.log(err)
-        if(callSettings.initiator){
-            callMessage(socket, callSettings, timer)
-        }
-        
-        socket.emit('call-error', {
-            userID: USER_DATA.account_id,
-            message: err,
-            room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id)
-        })
-
-        if(userSettings.userStream){
-            userSettings.userStream.getTracks().forEach((track) => {
-                track.stop();
-            });
-        }
-    
-        dispatch(callSettingsReset())
-        setStream(undefined)
-        setPeerStream(undefined)
-        setScreenCastStream(undefined)
     }
 }

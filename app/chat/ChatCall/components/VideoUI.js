@@ -1,18 +1,25 @@
-import React, { useState, usState } from "react"
+import React, { useEffect, useState, usState } from "react"
 import { callSettingReducer } from "../../../features/callSettings"
 import { chatReducer } from "../../../features/chat"
 import { useSelector } from "react-redux"
 
-export default function VideoUI({ peerObject, peerVideo, userVideo }){
+export default function VideoUI({ socket, peerVideo, userVideo }){
     const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
     const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
     const peerSettings = useSelector((state) => state.callSettingReducer.peerSettings)
 
+    useEffect(() => {
+        if(userSettings.isPresenting && peerSettings.isPresenting){
+            
+        }
+    }, [userSettings.isPresenting, peerSettings.isPresenting])
+
     // This is if you put the presenter in fullscreen.
     // Do not confuse with the other fullscreen setting which is who has the larger screen
     const [fullScreen, setFullScreen] = useState(false) 
 
+    // Style component
     const fullScreenStyle = {
         top: 0,
         left: 0,
@@ -42,10 +49,10 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                         peerSettings.isPresenting &&
                         <>
                             <figure>
-                                <img src={ peerObject.profile_picture ? peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
+                                <img src={ peerSettings.peerObject.profile_picture ? peerSettings.peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
                             </figure>
                             <span>
-                                {`${peerObject.firstname} ${peerObject.lastname} is presenting`}
+                                {`${peerSettings.peerObject.firstname} ${peerSettings.peerObject.lastname} is presenting`}
                             </span>
                         </>
                     }
@@ -56,9 +63,9 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                 style={ fullScreen ? fullScreenStyle : null }
             >
                 {
-                    (!peerSettings.isCam && peerObject && !peerSettings.isPresenting) &&
+                    (!peerSettings.isCam && peerSettings.peerObject && !peerSettings.isPresenting) &&
                     <figure>
-                        <img src={ peerObject.profile_picture ? peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
+                        <img src={ peerSettings.peerObject.profile_picture ? peerSettings.peerObject.profile_picture : "https://codenoury.se/assets/generic-profile-picture.png" }/>
                     </figure>
                 }
                 <div className="video-wrapper">
@@ -80,8 +87,8 @@ export default function VideoUI({ peerObject, peerVideo, userVideo }){
                         }
                     </div>
                     {
-                        peerObject &&
-                        <span>{`${peerObject.firstname} ${peerObject.lastname}`}</span>
+                        peerSettings.peerObject &&
+                        <span>{`${peerSettings.peerObject.firstname} ${peerSettings.peerObject.lastname}`}</span>
                     }
                     {
                         peerSettings.isPresenting &&

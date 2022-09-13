@@ -23,7 +23,8 @@ const initialState = {
         isCam: false,
         isMuted: false,
         isPresenting: false,
-        peerStream: null
+        peerStream: null,
+        peerObject: undefined
     },
     screenCastStream: undefined,
     signalData: {
