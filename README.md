@@ -10,22 +10,24 @@
 # Table of Contents
   - [Introduction](#introduction)
   - [Dependencies](#dependencies)
+  - [File Structure](#filestructure)
 
   
 # Introduction
  
-# 📦 Dependencies
+# Dependencies
 You can below find all the dependencies (packages) used in this project in order for the application to work. The section will be divided into Client-side dependencies and server-side dependencies.
  
  ## Client Dependencies
- -  [Next.js](https://github.com/vercel/next.js/) -> React framework
- -  [Redux Toolkit](https://github.com/reduxjs/redux-toolkit) -> State Management
- -  [Socket.io - Client]
- -  [uuid]
+ -  [Next.js](https://github.com/vercel/next.js/)
+ -  [Redux Toolkit](https://github.com/reduxjs/redux-toolkit)
+ -  [Socket.io - Client](https://github.com/socketio/socket.io-client)
+ -  [Simple-peer](https://github.com/feross/simple-peer/tree/9ea1805d992a8164a42b750160ed3425f2a494f1)
+ -  [uuid](https://github.com/uuidjs/uuid)
  
  ## Server Dependencies
- - [Express.js]
- - [Socket.io - Server]
+ - [Express.js](https://github.com/expressjs/express)
+ - [Socket.io - Server](https://github.com/socketio/socket.io)
  - [UTF8]
  - [uuid]
  - [Nodemon]
@@ -34,7 +36,7 @@ You can below find all the dependencies (packages) used in this project in order
  - [BcryptJS]
  - [MySQL](https://github.com/mysqljs/mysql)
  
- ## 📁 File Structure
+ ## File Structure
     Risala - Web
     ├── app
     │   ├── api
