@@ -447,8 +447,8 @@ export default function  ChatTop({setWidth, socket}){
     // Triggers ChatCall.js
     function callClick(type){
         navigator.mediaDevices.getUserMedia({
-            video: type === "video" ? true : false,
-            audio: true
+            audio: true,
+            video: type === "video" ? true : false
         })
         .then((stream) => {
             initCall(stream)
@@ -474,7 +474,7 @@ export default function  ChatTop({setWidth, socket}){
                 initiator: true,
                 initiatorID: USER_DATA.account_id,
                 userSettings: {
-                    isCam: (type === "video" && !cameraError) ? true : false,
+                    isCam: type === "video" ? true : false,
                     isCamError: cameraError ? true : false,
                     isMuted: false,
                     userPeer: peer,

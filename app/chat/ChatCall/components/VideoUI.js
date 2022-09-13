@@ -31,6 +31,8 @@ export default function VideoUI({ socket, peerVideo, userVideo }){
         }
     }, [userSettings.isPresenting, peerSettings.isPresenting])
 
+    // Whenever you are presenting, and peer starts presenting, the peer takes over
+    // Same applies for your peer if the opposite happens
     function peerScreenOvertake(){
         if(userSettings.userPeer){
             if(userSettings.screenStream){
@@ -43,6 +45,7 @@ export default function VideoUI({ socket, peerVideo, userVideo }){
                     userSettings.screenStream.getVideoTracks().forEach(function (track) {
                         track.stop();
                     });
+                    userVideo.current.srcObject = userSettings.userStream
                 } catch (err){
                     informationManager({purpose: 'error', message: err.message})
                 }
@@ -56,16 +59,7 @@ export default function VideoUI({ socket, peerVideo, userVideo }){
                     castStream.getVideoTracks().forEach(function (track) {
                         track.stop();
                     });
-                } catch (err){
-                    informationManager({purpose: 'error', message: err.message})
-                }
-            } else {
-                try {
-                    userSettings.userPeer.replaceTrack(
-                        screenCastStreamSaver.getVideoTracks()[0],
-                        userSettings.userStream.getVideoTracks()[0],
-                        userSettings.userStream
-                    );
+                    userVideo.current.srcObject = userSettings.userStream
                 } catch (err){
                     informationManager({purpose: 'error', message: err.message})
                 }

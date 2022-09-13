@@ -23,6 +23,23 @@ export function callTerminated(socket){
         room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id)
     })
 
+    // Cleaning function, removes stream, castStream and destroys peer
+    try {
+        if(userSettings.userStream){
+            userSettings.userStream.getTracks().forEach((track) => {
+                track.stop();
+            });
+        }
+    } catch{
+        try {
+            userSettings.screenStream.getTracks().forEach((track) => {
+                track.stop();
+            });
+        } catch {
+            console.log("Could not stop screenStream")
+        }
+    }
+
     try {
         userSettings.userPeer.destroy()
     } catch(err){
@@ -51,6 +68,7 @@ export function callInterrupt(err, timer, socket){
         })
     }
 
+    // Cleaning function, removes stream, castStream and destroys peer
     try {
         if(userSettings.userStream){
             userSettings.userStream.getTracks().forEach((track) => {

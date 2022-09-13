@@ -12,8 +12,8 @@ export default function CallerWindow({ socket }){
 
     function acceptCall(){
         navigator.mediaDevices.getUserMedia({
-            video: callSettings.purpose === "video" ? true : false,
-            audio: true
+            audio: true,
+            video: callSettings.purpose === "video" ? true : false
         })
         .then((stream) => {
             initCall(stream)
