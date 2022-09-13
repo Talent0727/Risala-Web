@@ -23,6 +23,11 @@ export function callTerminated(socket){
         room: callSettings.members.map(e => e.id).filter(e => e !== USER_DATA.account_id)
     })
 
+    try {
+        userSettings.userPeer.destroy()
+    } catch{
+    }
+
     store.dispatch(callSettingsReset())
 }
 
@@ -57,6 +62,11 @@ export function callInterrupt(err, timer, socket){
         } catch {
             console.log("Could not stop screenStream")
         }
+    }
+
+    try {
+        userSettings.userPeer.destroy()
+    } catch{
     }
 
     store.dispatch(callSettingsReset())

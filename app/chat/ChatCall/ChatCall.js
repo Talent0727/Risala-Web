@@ -119,7 +119,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             }))
         }
 
-        if(timer === 30){
+        if(timer === 30 && callSettings.isActive){
             if(callSettings.joined.length === 1 && callSettings.initiator){
                 console.log("Triggered missed call")
                 callMessage(socket, callSettings, timeStamp, true)
@@ -156,9 +156,13 @@ export default function ChatCall({ locale, current, USER_DATA }){
         if((userPeer || peer || userSettings.userPeer) && callSettings.signalData && callSettings.initiator){
             if(userSettings.userPeer){
                 userSettings.userPeer.signal(callSettings.signalData)
+            } else if(userPeer){
+                userPeer.signal(callSettings.signalData)
             }
+
+            console.log(peer, userPeer, callSettings.userPeer)
         }
-    }, [userPeer, peer, callSettings.signalData])
+    }, [callSettings.userPeer, userPeer, callSettings.signalData])
 
     /*************************/
 
