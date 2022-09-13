@@ -59,20 +59,14 @@ export default function ChatCall({ locale, current, USER_DATA }){
                 } else if(data.purpose === "screen-sharing"){
                     if(data.isSharing){
                         console.log("Peer is presenting now")
-                        if(userSettings.isPresenting || screenSharing){
-                            console.log("Stop presenting")
-                            stopScreenShare(false, true)
-                        } else {
-                            // Remove fullscreen, peer is now presenting
-                            dispatch(callSettingReducer({
-                                userSettings: {
-                                    isFullScreen: false
-                                },
-                                peerSettings: {
-                                    isPresenting: true
-                                }
-                            }))
-                        }
+
+                        // TEST!!!!!!!
+                        // Remove fullscreen, peer is now presenting
+                        dispatch(callSettingReducer({
+                            peerSettings: {
+                                isPresenting: true
+                            }
+                        }))
                     } else {
                         dispatch(callSettingReducer({
                             peerSettings: { isPresenting: false }

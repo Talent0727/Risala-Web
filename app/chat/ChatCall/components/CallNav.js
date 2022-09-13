@@ -20,15 +20,15 @@ export default function CallNav({ isTimer, timeStamp, setTimeStamp, timer, setTi
     const [nickname, setNickname] = useState(undefined)
 
     function stopCamera(){
-        if(userSettings.isPresenting){
-            userSettings.screenStream.getVideoTracks().forEach(function (track) {
-                track.stop();
-            });
-        }
+        //if(userSettings.isPresenting){
+        //    userSettings.screenStream.getVideoTracks().forEach(function (track) {
+        //        track.stop();
+        //    });
+        //}
 
         if(userSettings.isCam){
             userSettings.userStream.getTracks()[1].enabled = false
-        } else { //You go from unmuted to muted
+        } else { //You go from hidden camera to visible camera
             userSettings.userStream.getTracks()[1].enabled = true
         }
 

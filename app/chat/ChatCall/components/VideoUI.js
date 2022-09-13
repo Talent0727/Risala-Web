@@ -1,9 +1,10 @@
 import React, { useEffect, useState, usState } from "react"
 import { callSettingReducer } from "../../../features/callSettings"
 import { chatReducer } from "../../../features/chat"
-import { useSelector } from "react-redux"
+import { useSelector, useDispatch } from "react-redux"
 
 export default function VideoUI({ socket, peerVideo, userVideo }){
+    const dispatch = useDispatch();
     const USER_DATA = useSelector((state) => state.chatReducer.value.USER_DATA)
     const callSettings = useSelector((state) => state.callSettingReducer)
     const userSettings = useSelector((state) => state.callSettingReducer.userSettings)
@@ -39,6 +40,9 @@ export default function VideoUI({ socket, peerVideo, userVideo }){
                         userSettings.userStream.getVideoTracks()[0],
                         userSettings.userStream
                     );
+                    userSettings.screenStream.getVideoTracks().forEach(function (track) {
+                        track.stop();
+                    });
                 } catch (err){
                     informationManager({purpose: 'error', message: err.message})
                 }
@@ -49,6 +53,9 @@ export default function VideoUI({ socket, peerVideo, userVideo }){
                         userSettings.userStream.getVideoTracks()[0],
                         userSettings.userStream
                     );
+                    castStream.getVideoTracks().forEach(function (track) {
+                        track.stop();
+                    });
                 } catch (err){
                     informationManager({purpose: 'error', message: err.message})
                 }
