@@ -49,20 +49,6 @@ export default function VideoUI({ socket, peerVideo, userVideo }){
                 } catch (err){
                     informationManager({purpose: 'error', message: err.message})
                 }
-            } else if(castStream){
-                try {
-                    userSettings.userPeer.replaceTrack(
-                        castStream.getVideoTracks()[0],
-                        userSettings.userStream.getVideoTracks()[0],
-                        userSettings.userStream
-                    );
-                    castStream.getVideoTracks().forEach(function (track) {
-                        track.stop();
-                    });
-                    userVideo.current.srcObject = userSettings.userStream
-                } catch (err){
-                    informationManager({purpose: 'error', message: err.message})
-                }
             }
         } else {
             informationManager({purpose: 'error', message: "Peer could not be found! Please close the call and reload the page"})
