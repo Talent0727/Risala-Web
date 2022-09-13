@@ -37,6 +37,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     // Reserve states
     const [castStream, setCastStream] = useState(undefined)
+    const [isMissed, setIsMissed] = useState(true)
 
     // For timer function
     const [isTimer, setIsTimer] = useState(false)
@@ -45,7 +46,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
 
     //Socket Events
     useEffect(() => {
-        if(socket.connected){
+        if(socket.connected && callSettings.isActive){
 
             socket.on('call-message', (data) => {
                 if(data.purpose === "microphone"){
@@ -76,7 +77,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     informationManager({purpose: 'error', message: `An error has occurred by your peer: ${err}`})
                     callTerminated(socket)
                 } else if(data.purpose === "reject"){
-                    callMessage(socket, data.callSettings ? data.callSettings : data, timeStamp, true)
+                    callMessage(socket, timeStamp, true)
                     callTerminated(socket)
                 }
             })
@@ -86,40 +87,41 @@ export default function ChatCall({ locale, current, USER_DATA }){
             })
             socket.on('call-closed', (data) => {
                 if(callSettings.initiator){
-                    callMessage(socket, callSettings, timeStamp, callSettings.joined.length === 1 ? true : false)
+                    console.log(isMissed)
+                    callMessage(socket, timeStamp, isMissed)
                 }
 
-                if(userSettings.isPresenting){
-                    // Cleaning function, removes stream, castStream and destroys peer
-                    try {
-                        if(userSettings.userStream){
-                            userSettings.userStream.getTracks().forEach((track) => {
-                                track.stop();
-                            });
-                        }
-                    } catch{
-                        try {
-                            userSettings.screenStream.getTracks().forEach((track) => {
-                                track.stop();
-                            });
-                        } catch {
-                            console.log("Could not stop screenStream")
-                        }
-                    }
-                
-                    try {
-                        userSettings.userPeer.destroy()
-                    } catch(err){
-                        console.log(err)
-                    }
-                } else {
-                    dispatch(callSettingsReset())
-                    var message = data.reason ? data.reason : `Call closed by: ${data.name}`
-                    informationManager({purpose: 'information', message: message})
+                try {
+                    document.querySelectorAll('.call-window video').forEach((video) => {
+                        console.log(video)
+                        var tracks = video.srcObject.getTracks();
+                        tracks.forEach((track) => {
+                            console.log(track)
+                            track.stop()
+                        })
+                        video.srcObject = null;
+                    })
+                } catch(err){
+                    console.log(err)
                 }
+            
+                try {
+                    userSettings.userPeer.destroy()
+                } catch(err){
+                    console.log(err)
+                }
+
+                dispatch(callSettingsReset())
+                var message = data.reason ? data.reason : `Call closed by: ${data.name}`
+                informationManager({purpose: 'information', message: message})
             })
+        } else if(!callSettings.isActive){
+            socket.off('call-message')
+            socket.off('call-error')
+            socket.off('call-closed')
+            setIsMissed(true)
         }
-    }, [socket.connected])
+    }, [socket.connected, callSettings.isActive])
 
     // Keep this one
     useEffect(() => {
@@ -129,12 +131,13 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     peerObject: callSettings.members.filter(e => e.id !== USER_DATA.account_id)[0]
                 }
             }))
+            setIsMissed(false)
         }
 
         if(timer === 30 && callSettings.isActive){
             if(callSettings.joined.length === 1 && callSettings.initiator){
                 console.log("Triggered missed call")
-                callMessage(socket, callSettings, timeStamp, true)
+                callMessage(socket, timeStamp, true)
                 callTerminated(socket)
                 socket.emit('call-closed', {
                     id: callSettings.id,

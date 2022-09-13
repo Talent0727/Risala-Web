@@ -25,19 +25,17 @@ export function callTerminated(socket){
 
     // Cleaning function, removes stream, castStream and destroys peer
     try {
-        if(userSettings.userStream){
-            userSettings.userStream.getTracks().forEach((track) => {
-                track.stop();
-            });
-        }
-    } catch{
-        try {
-            userSettings.screenStream.getTracks().forEach((track) => {
-                track.stop();
-            });
-        } catch {
-            console.log("Could not stop screenStream")
-        }
+        document.querySelectorAll('.call-window video').forEach((video) => {
+            console.log(video)
+            var tracks = video.srcObject.getTracks();
+            tracks.forEach((track) => {
+                console.log(track)
+                track.stop()
+            })
+            video.srcObject = null;
+        })
+    } catch(err){
+        console.log(err)
     }
 
     try {
@@ -57,7 +55,7 @@ export function callInterrupt(err, timer, socket){
 
     console.log(err)
     if(callSettings.initiator){
-        callMessage(socket, callSettings, timer)
+        callMessage(socket, timer)
     }
     
     if(callSettings.members.length > 1){
@@ -70,19 +68,17 @@ export function callInterrupt(err, timer, socket){
 
     // Cleaning function, removes stream, castStream and destroys peer
     try {
-        if(userSettings.userStream){
-            userSettings.userStream.getTracks().forEach((track) => {
-                track.stop();
-            });
-        }
-    } catch{
-        try {
-            userSettings.screenStream.getTracks().forEach((track) => {
-                track.stop();
-            });
-        } catch {
-            console.log("Could not stop screenStream")
-        }
+        document.querySelectorAll('.call-window video').forEach((video) => {
+            console.log(video)
+            var tracks = video.srcObject.getTracks();
+            tracks.forEach((track) => {
+                console.log(track)
+                track.stop()
+            })
+            video.srcObject = null;
+        })
+    } catch(err){
+        console.log(err)
     }
 
     try {

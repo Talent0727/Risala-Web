@@ -4,7 +4,7 @@ export default function volumeMeterInit(stream, target, purpose){
   var microphone = audioContext.createMediaStreamSource(stream);
   var javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
   analyser.smoothingTimeConstant = 0.8;
-  analyser.fftSize = 1024;
+  analyser.fftSize = 2048;
 
   microphone.connect(analyser);
   analyser.connect(javascriptNode);

@@ -71,10 +71,16 @@ export default function CallNav({ isTimer, timeStamp, setTimeStamp, timer, setTi
 
     // Initiated if YOU hang up
     function hangUp(){
-        if(userSettings.useStream){
-            userSettings.userStream.getTracks().forEach(function(track) {
-                track.stop();
-            });
+        try {
+            document.querySelectorAll('.call-window video').forEach((video) => {
+                var tracks = video.srcObject.getTracks();
+                tracks.forEach((track) => {
+                    track.stop()
+                })
+                video.srcObject = null;
+            })
+        } catch (err){
+            console.log(err)
         }
 
         socket.emit('call-closed', {
@@ -85,7 +91,7 @@ export default function CallNav({ isTimer, timeStamp, setTimeStamp, timer, setTi
         })
 
         if(callSettings.initiator && peerSettings.peerObject){
-            callMessage(socket, callSettings, timeStamp)
+            callMessage(socket, timeStamp)
         }
 
         dispatch(callSettingsReset())

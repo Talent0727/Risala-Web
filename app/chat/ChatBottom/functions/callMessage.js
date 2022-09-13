@@ -1,15 +1,19 @@
 import store from "../../../features/store";
 import { chatReducer } from "../../../features/chat";
+import { callSettingReducer } from "../../../features/callSettings";
 import getCurrentTime from "../../../modules/time";
 import { v4 as uuidv4 } from 'uuid';
 
-export default function callMessage(socket, callSettings, callTime = null, isMissed = false){
+export default function callMessage(socket, callTime = null, isMissed = false){
     const state = store.getState().chatReducer.value
+    const callSettings = store.getState().callSettingReducer
     const chats = state.chats
     const chat = state.chat
     const current = state.current
     const COUNTER_DATA = state.COUNTER_DATA
     const USER_DATA = state.USER_DATA
+
+    console.log(callSettings)
 
     var textObject = {
         purpose: callSettings.purpose,
@@ -17,7 +21,7 @@ export default function callMessage(socket, callSettings, callTime = null, isMis
     }
 
     // Was the call misssed? In that case add it to the object
-    if(isMissed){
+    if(callSettings.joined.length < 2){
         textObject.isMissed = true
     }
 
@@ -99,7 +103,6 @@ export default function callMessage(socket, callSettings, callTime = null, isMis
         // Add recentMessage to messageObject to reduce Backend strain
         var recentMessage = newChat.recent_message
         messageObject = { ...messageObject, recentMessage}
-        console.log(messageObject)
         //socket.emit('message', messageObject)
     } else {
         store.dispatch(chatReducer({
@@ -110,7 +113,6 @@ export default function callMessage(socket, callSettings, callTime = null, isMis
         // Add recentMessage to messageObject to reduce Backend strain
         var recentMessage = newChat.recent_message
         messageObject = { ...messageObject, recentMessage}
-        console.log(messageObject)
         //socket.emit('message', messageObject)
     }
 }
