@@ -28,13 +28,16 @@ You can below find all the dependencies (packages) used in this project in order
  ## Server Dependencies
  - [Express.js](https://github.com/expressjs/express)
  - [Socket.io - Server](https://github.com/socketio/socket.io)
- - [UTF8]
- - [uuid]
- - [Nodemon]
- - [Nodemailer]
- - [Multer]
- - [BcryptJS]
+ - [Nodemon](https://github.com/remy/nodemon)
+ - [Nodemailer](https://github.com/nodemailer/nodemailer)
+ - [Multer](https://github.com/expressjs/multer)
+ - [BcryptJS](https://github.com/kelektiv/node.bcrypt.js)
  - [MySQL](https://github.com/mysqljs/mysql)
+ - [cors](https://www.npmjs.com/package/cors)
+ - [UTF8](https://www.npmjs.com/package/utf8)
+ - [uuid](https://github.com/uuidjs/uuid)
+ - [body-parser](https://www.npmjs.com/package/body-parser)
+ - [dotenv](https://www.npmjs.com/package/dotenv)
  
  ## File Structure
     Risala - Web
