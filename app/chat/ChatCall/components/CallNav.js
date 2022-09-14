@@ -176,6 +176,8 @@ export default function CallNav({ socket, screenShare, stopScreenShare }){
                 isMinimised: true
             }))
         } else if(callSettings.isMinimised){
+            document.querySelector('.call-window').style.top = 0;
+            document.querySelector('.call-window').style.left = 0;
             dispatch(callSettingReducer({
                 isMinimised: false
             }))

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatReducer } from "../../features/chat";
 import { callSettingReducer, callSettingsReset } from "../../features/callSettings";
-import Peer from "simple-peer";
 import { SocketContext } from "../../components/Socket";
 import informationManager from "../../modules/informationManager";
 
@@ -32,7 +31,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
     const userVideo     = useRef(null);
     const peerVideo     = useRef(null);
     const peerAudio     = useRef(null);
-    const callWindow    = useRef(null);
+    const callWindow    = useRef();
 
     // For draggable window
     const [dragPosition, setDragPosition] = useState([0, 20])
@@ -187,78 +186,105 @@ export default function ChatCall({ locale, current, USER_DATA }){
     /************************* DRAG FUNCTION ************************'*/
     const [isDragging, setIsDragging] = useState(false)
     const [startPosition, setStartPosition] = useState([0, 0])
-    const [elementPosition, setElementPosition] = useState([0, 0])
 
     function dragWindow(e){
         if(e.type === "mousedown"){
             setIsDragging(true)
             setStartPosition([e.pageX, e.pageY])
-        } else if(e.type === "mouseup" && isDragging){
+            e.stopPropagation()
+            e.preventDefault()
+        } else if(e.type === "mouseup" && isDragging && callSettings.isMinimised){
             setIsDragging(false)
             document.removeEventListener('mouseup', dragWindow)
             document.removeEventListener('mousemove', dragWindow)
             bounceEffect()
+            e.stopPropagation()
+            e.preventDefault()
         } else if(e.type === "mousemove"){
             var differenceX = e.clientX - startPosition[0]
             var differenceY = e.clientY - startPosition[1]
-            dragEffect(differenceX, differenceY)
-        }
-
-        function dragEffect(differenceX, differenceY){
-
-            // Left drag
-            if(differenceX < 0){
-                var newPositionX = dragPosition[1] - Math.abs(differenceX)
-            } else { // Right drag
-                var newPositionX = dragPosition[1] + differenceX
-            }
-
-            // Upwards drag
-            if(differenceY < 0){
-                var newPositionY = dragPosition[0] - Math.abs(differenceY)
-            } else { // Downwards drag
-                var newPositionY = dragPosition[0] + differenceY
-            }
-
-            setDragPosition([newPositionX, newPositionY])
+            document.querySelector('.call-window').style.transform = `translate(${differenceX}px, ${differenceY}px)`
+            e.stopPropagation()
+            e.preventDefault()
         }
 
         function bounceEffect(){
-            var positionX = dragPosition[0]
-            var positionY = dragPosition[1]
+            console.log("Bounce triggered", callSettings.isMinimised)
+            var positionX = document.querySelector('.call-window').getBoundingClientRect().left 
+            var positionY = document.querySelector('.call-window').getBoundingClientRect().top 
             var width = document.querySelector('.call-window').clientWidth 
             var height = document.querySelector('.call-window').clientHeight 
             var left;
             var top;
             
             var leftFiftyMark = (window.innerWidth / 2)
-            var leftMax = window.innerWidth
+            var leftMax = window.innerWidth - (width + 20)
             var topFiftyMark = (window.innerHeight / 2)
-            var topMax = window.innerHeight
+            var topMax = window.innerHeight - (height + 20)
 
-            if(positionY < 20 || positionY < leftFiftyMark){
-                left = '20px'
-            } else if(positionY > leftMax || positionY > leftFiftyMark){
-                left = `${leftMax - (width + 20)}px`
+            if(positionY < topFiftyMark && positionX < leftFiftyMark){ // Position Top Left (Done)
+                if(positionX > positionY){
+                    top = '20px';
+                    left = positionX > 20 ? `${positionX}px` : '20px'
+                } else if(positionX < positionY){
+                    top = positionY > 20 ? `${positionY}px` : '20px'
+                    left = '20px';
+                } else {
+                    top = '20px';
+                    left = '20px';
+                }
+            } else if(positionY > topFiftyMark && positionX < leftFiftyMark){ // Position Bottom Left
+                if(positionX < positionY){
+                    top = positionY > topMax ? `${topMax}px` : `${positionY}px`; // Double check this one!!
+                    left = positionX > 20 ? `${positionX}px` : '20px';
+                } else {
+                    top = `${topMax}px`;
+                    left = '20px';
+                }
+            } else if(positionY > topFiftyMark && positionX > leftFiftyMark){ // Position Bottom Right
+                if(positionX > positionY){
+                    top = positionY > topMax ? `${topMax}px` : `${positionY}px`;
+                    left = positionX < leftMax ? `${positionX}px` : `${leftMax}px`
+                } else if(positionX < positionY){
+                    top = `${positionY}px`
+                    left = '20px';
+                } else {
+                    top = `${topMax}px`;
+                    left = `${leftMax}px`;
+                }
+            } else if(positionY < topFiftyMark && positionX > leftFiftyMark){ // Position Top Right
+
             }
 
-            if(positionX < 20 || positionX < topFiftyMark){
-                top = "20px"
-            } else if(positionX > topMax || positionX > topFiftyMark){
+            /*
+            if(positionY < 20 || positionY < topFiftyMark){
+                top = '20px'
+            } else if(positionY > topMax || positionY > topFiftyMark){
                 top = `${topMax - (height + 20)}px`
             }
 
+            if(positionX < 20 || positionX < leftFiftyMark){
+                left = "20px"
+            } else if(positionX > leftMax || positionX > leftFiftyMark){
+                left = `${leftMax - (width + 20)}px`
+            }
+            */
+
+            console.log(left, top)
+
             try {
-                callWindow.currentTarget.animate([{ top: top, left: left}], {
+                callWindow.currentTarget.animate([{ top: top, left: left, transform: 'translate(0, 0)'}], {
                     duration: 1000,
                     easing: "ease",
-                    fill: "forwards",
                 })
             } catch {
-                document.querySelector('.call-window').animate([{ top: top, left: left}], {
+                setTimeout(() => {
+                    setDragPosition([left.slice(0, -2), top.slice(0, -2)])
+                    //document.querySelector('.call-window').style.cssText = `top: ${top}; left: ${left}`
+                }, 900);
+                document.querySelector('.call-window').animate([{ top: top, left: left, transform: 'translate(0, 0)'}], {
                     duration: 1000,
                     easing: "ease",
-                    fill: "forwards",
                 })
             }
         }
@@ -279,11 +305,18 @@ export default function ChatCall({ locale, current, USER_DATA }){
     }, [isDragging])
 
     useEffect(() => {
+        console.log(callWindow.current)
         if(callSettings.isMinimised && callSettings.purpose === "call"){
             var left = ((window.innerWidth / 2) - 150)
             setDragPosition([left, 20])
         }
     }, [callSettings.isMinimised])
+
+    useEffect(() => {
+        if(callSettings.isMinimised){
+            callWindow.current.style.cssText = `left: ${dragPosition[0]}px; top: ${dragPosition[1]}px`
+        }
+    }, [dragPosition])
 
     function initiateCall(){
         dispatch(callSettingReducer({
@@ -416,7 +449,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     }
                     ref={callWindow}
                     onMouseDown={(callSettings.isMinimised && callSettings.purpose === "call") ? dragWindow : null}
-                    style={(callSettings.isMinimised && callSettings.purpose) ? {left: `${dragPosition[0]}px`, top: `${dragPosition[1]}px`} : null}
+                    style={(callSettings.isMinimised && callSettings.purpose) ? {left: `${dragPosition[0]}px`, top: `${dragPosition[1]}px`} : {top: 0, left: 0}}
                 >
                     <div className="call-window-main">
                         {
