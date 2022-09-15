@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { chatReducer } from "../../features/chat";
 import { callSettingReducer, callSettingsReset } from "../../features/callSettings";
-import Peer from "simple-peer";
 import { SocketContext } from "../../components/Socket";
 import informationManager from "../../modules/informationManager";
 
@@ -17,7 +16,6 @@ import callMessage      from "../ChatBottom/functions/callMessage"
 import volumeMeterInit  from "./functions/volumeMeterInit";
 import { callTerminated, callInterrupt } from "./functions/closeCalls";
 
-var peer; // Should peer become a state?
 let screenSharing = false;
 let screenCastStreamSaver;
 
@@ -30,9 +28,13 @@ export default function ChatCall({ locale, current, USER_DATA }){
     const timer = useSelector((state) => state.callSettingReducer.timer)
     const isTimer = useSelector((state) => state.callSettingReducer.isTimer)
 
-    const userVideo = useRef(null);
-    const peerVideo = useRef(null);
-    const peerAudio = useRef(null);
+    const userVideo     = useRef(null);
+    const peerVideo     = useRef(null);
+    const peerAudio     = useRef(null);
+    const callWindow    = useRef();
+
+    // For draggable window
+    const [dragPosition, setDragPosition] = useState([0, 20])
 
     // These are call settings for the PEER
     const [userPeer, setUserPeer] = useState(undefined)
@@ -181,6 +183,169 @@ export default function ChatCall({ locale, current, USER_DATA }){
         }
     }, [callSettings.userPeer, userPeer, callSettings.signalData])
 
+    /************************* DRAG FUNCTION ************************'*/
+    const [isDragging, setIsDragging] = useState(false)
+    const [startPosition, setStartPosition] = useState([0, 0])
+
+    function dragWindow(e){
+        var invalidTargets = ['material-icons', 'timer', 'call-main-buttons'];
+        var correctTarget = invalidTargets.includes(e.target.className) ? false : true
+        if(e.type === "mousedown" && callSettings.isMinimised && correctTarget){
+            setIsDragging(true)
+            setStartPosition([e.pageX, e.pageY])
+            e.stopPropagation()
+            e.preventDefault()
+        } else if(e.type === "mouseup" && isDragging && callSettings.isMinimised){
+            setIsDragging(false)
+            document.removeEventListener('mouseup', dragWindow)
+            document.removeEventListener('mousemove', dragWindow)
+            bounceEffect()
+            e.stopPropagation()
+            e.preventDefault()
+        } else if(e.type === "mousemove"){
+            var differenceX = e.clientX - startPosition[0]
+            var differenceY = e.clientY - startPosition[1]
+            document.querySelector('.call-window').style.transform = `translate(${differenceX}px, ${differenceY}px)`
+            e.stopPropagation()
+            e.preventDefault()
+        }
+
+        function bounceEffect(){
+            var positionX = document.querySelector('.call-window').getBoundingClientRect().left 
+            var positionY = document.querySelector('.call-window').getBoundingClientRect().top 
+            var width = document.querySelector('.call-window').clientWidth 
+            var height = document.querySelector('.call-window').clientHeight 
+            var left;
+            var top;
+            
+            // Y-Axis Positions
+            var maxY = window.innerHeight - (height + 20)
+            var thirdY = maxY - (maxY/4)
+            var fiftyY = (window.innerHeight / 2)
+            var firstY = fiftyY/2
+
+            // X-Axis Positions
+            var maxX = window.innerWidth - (width + 20)
+            var thirdX = maxX - (maxX / 4)
+            var fiftyX = (window.innerWidth / 2)
+            var firstX = fiftyX/2
+
+
+            // New Approach
+            if(positionY < firstY){ // First row
+                top = '20px'
+                left = positionX < 0 ? '20px' : positionX > maxX ? `${maxX}px` : `${positionX}px`
+            } else if(positionY > firstY && positionY < fiftyY){ // Second row
+                if(positionX < fiftyX){
+                    top = `${positionY}px`
+                    left = '20px'
+                } else {
+                    top = `${positionY}px`
+                    left = `${maxX}px`
+                }
+            } else if(positionY > thirdY && positionY < maxY){ // Third row
+                if(positionX < fiftyX){
+                    top = `${positionY}px`
+                    left = '20px'
+                } else {
+                    top = `${positionY}px`
+                    left = `${maxX}px`
+                }
+            } else { // Last row
+                top = `${maxY}px`
+                if(positionX < fiftyX){
+                    left = positionX < 0 ? '20px' : `${positionX}px`
+                } else {
+                    left = positionX > maxX ? `${maxX}px` : `${positionX}px`
+                }
+            }
+
+            /*
+            if(positionY < topFiftyMark && positionX < leftFiftyMark){ // Position Top Left (Done)
+                if(positionX > positionY){
+                    top = '20px';
+                    left = positionX > 20 ? `${positionX}px` : '20px'
+                } else if(positionX < positionY){
+                    top = positionY > 20 ? `${positionY}px` : '20px'
+                    left = '20px';
+                } else {
+                    top = '20px';
+                    left = '20px';
+                }
+            } else if(positionY > topFiftyMark && positionX < leftFiftyMark){ // Position Bottom Left
+                if(positionX > quarterLeftBottomX){
+                    top = `${topMax}px`
+                    left = `${positionX}px`
+                } else if(positionX < quarterLeftBottomX && positionY > quarterTopY){
+                    top = positionY > topMax ? `${topMax}px` : `${positionY}px`
+                    left = '20px'
+                } else if(positionY < quarterTopY) {
+                    top = `${topMax}px`
+                    left = positionY > leftMax ? `${leftMax}px` : `${positionY}px`
+                } else {
+                    top = `${topMax}px`;
+                    left = '20px';
+                }
+            } else if(positionY > topFiftyMark && positionX > leftFiftyMark){ // Position Bottom Right
+                if(positionX > positionY){
+                    top = positionY > topMax ? `${topMax}px` : `${positionY}px`;
+                    left = positionX < leftMax ? `${positionX}px` : `${leftMax}px`
+                } else if(positionX < positionY){
+                    top = `${positionY}px`
+                    left = '20px';
+                } else {
+                    top = `${topMax}px`;
+                    left = `${leftMax}px`;
+                }
+            } else if(positionY < topFiftyMark && positionX > leftFiftyMark){ // Position Top Right
+
+            }
+            */
+
+            try {
+                callWindow.currentTarget.animate([{ top: top, left: left, transform: 'translate(0, 0)'}], {
+                    duration: 1000,
+                    easing: "ease",
+                })
+            } catch {
+                setTimeout(() => {
+                    setDragPosition([left.slice(0, -2), top.slice(0, -2)])
+                    //document.querySelector('.call-window').style.cssText = `top: ${top}; left: ${left}`
+                }, 900);
+                document.querySelector('.call-window').animate([{ top: top, left: left, transform: 'translate(0, 0)'}], {
+                    duration: 1000,
+                    easing: "ease",
+                })
+            }
+        }
+    }
+
+    useEffect(() => {
+        if(isDragging){
+            document.addEventListener('mouseup', dragWindow)
+            document.addEventListener('mousemove', dragWindow)
+        }
+
+        return(() => {
+            if(isDragging){
+                document.removeEventListener('mouseup', dragWindow)
+                document.removeEventListener('mousemove', dragWindow)
+            }
+        })
+    }, [isDragging])
+
+    useEffect(() => {
+        if(callSettings.isMinimised && callSettings.purpose === "call"){
+            var left = ((window.innerWidth / 2) - 150)
+            setDragPosition([left, 20])
+        }
+    }, [callSettings.isMinimised])
+
+    useEffect(() => {
+        if(callSettings.isMinimised){
+            callWindow.current.style.cssText = `left: ${dragPosition[0]}px; top: ${dragPosition[1]}px`
+        }
+    }, [dragPosition])
 
     function initiateCall(){
         dispatch(callSettingReducer({
@@ -304,16 +469,24 @@ export default function ChatCall({ locale, current, USER_DATA }){
         <>
             {
                 callSettings.isActive && callSettings.isInCall &&
-                <div className="call-window">
+                <div
+                    className={
+                        (callSettings.isMinimised && callSettings.purpose === "video") ? "call-window minimised video" :
+                        callSettings.isMinimised && callSettings.purpose === "call" ? "call-window minimised call" :
+                        callSettings.purpose === "video" ? "call-window video" :
+                        callSettings.purpose === "call" ? "call-window call" : "call-window"
+                    }
+                    ref={callWindow}
+                    onMouseDown={(callSettings.isMinimised && callSettings.purpose === "call") ? dragWindow : null}
+                    style={(callSettings.isMinimised && callSettings.purpose === "call") ? {left: `${dragPosition[0]}px`, top: `${dragPosition[1]}px`} : {top: 0, left: 0}}
+                >
                     <div className="call-window-main">
                         {
                             callSettings.joined.length <= 2 &&
                             <>
                                 {
                                     callSettings.purpose === "call" &&
-                                    <CallUI
-                                        peerAudio={peerAudio}
-                                    />
+                                    <CallUI peerAudio={peerAudio} />
                                 }
                                 {
                                     callSettings.purpose === "video" &&
@@ -351,6 +524,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             setCastStream(screenStream)
             screenCastStreamSaver = screenStream
             dispatch(callSettingReducer({
+                isMinimised: false,
                 userSettings: {
                     screenStream: screenStream,
                     isPresenting: true

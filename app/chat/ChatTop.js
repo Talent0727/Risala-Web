@@ -17,7 +17,7 @@ export default function  ChatTop({setWidth, socket}){
     const MESSAGES = useSelector((state) => state.chatReducer.value.MESSAGES)
     const chat = useSelector((state) => state.chatReducer.value.chat)
     const chats = useSelector((state) => state.chatReducer.value.chats)
-    const callSettings = useSelector((state) => state.chatReducer.value.callSettings)
+    const callSettings = useSelector((state) => state.callSettingReducer)
 
     const userSearchRef = useRef(); //for create new message
     const [userSelected, setUserSelected] = useState(undefined) //select of user in suggestion window
@@ -446,41 +446,43 @@ export default function  ChatTop({setWidth, socket}){
     // This is triggered whenever a user has clicked on the videocall button or call button.
     // Triggers ChatCall.js
     function callClick(type){
-        navigator.mediaDevices.getUserMedia({
-            audio: true,
-            video: type === "video" ? true : false
-        })
-        .then((stream) => {
-            initCall(stream)
-        })
-        .catch((err) => {
-            informationManager({purpose: 'error', message: `${err.message} Please allow your browser to access the camera/microphone.`})
-            console.log(err)
-        })
-
-        function initCall(stream, cameraError = false){
-            const peer = new Peer({
-                initiator: true,
-                trickle: false,
-                stream: stream
+        if(!callSettings.isActive){
+            navigator.mediaDevices.getUserMedia({
+                audio: true,
+                video: type === "video" ? true : false
             })
-            dispatch(callSettingReducer({
-                isActive: true,
-                isInCall: true,
-                purpose: type,
-                id: current.id,
-                members: [...current.members],
-                joined: [USER_DATA.account_id],
-                initiator: true,
-                initiatorID: USER_DATA.account_id,
-                userSettings: {
-                    isCam: type === "video" ? true : false,
-                    isCamError: cameraError ? true : false,
-                    isMuted: false,
-                    userPeer: peer,
-                    userStream: stream
-                }
-            }))
+            .then((stream) => {
+                initCall(stream)
+            })
+            .catch((err) => {
+                informationManager({purpose: 'error', message: `${err.message} Please allow your browser to access the camera/microphone.`})
+                console.log(err)
+            })
+    
+            function initCall(stream, cameraError = false){
+                const peer = new Peer({
+                    initiator: true,
+                    trickle: false,
+                    stream: stream
+                })
+                dispatch(callSettingReducer({
+                    isActive: true,
+                    isInCall: true,
+                    purpose: type,
+                    id: current.id,
+                    members: [...current.members],
+                    joined: [USER_DATA.account_id],
+                    initiator: true,
+                    initiatorID: USER_DATA.account_id,
+                    userSettings: {
+                        isCam: type === "video" ? true : false,
+                        isCamError: cameraError ? true : false,
+                        isMuted: false,
+                        userPeer: peer,
+                        userStream: stream
+                    }
+                }))
+            }
         }
     }
 }

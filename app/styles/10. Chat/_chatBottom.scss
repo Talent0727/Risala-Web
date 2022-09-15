@@ -218,6 +218,22 @@
                 background-color: $black-3;
             }
         }
+        .loading{
+            height: 50px;
+            width: 80%;
+            border-radius: 20px;
+            .mock{
+                background-color: $black-2;
+                height: 40px;
+                width: calc(100% - 50px);
+                border-radius: 20px;
+                overflow: hidden;
+                margin-bottom: 10px;
+                &-short{
+                    width: calc(70% - 50px);
+                }
+            }
+        }
     }
     .emoji-window{
         position: absolute;

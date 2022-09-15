@@ -15,6 +15,8 @@ export default function SentMessage({index, value, optionSelect, timestamp, arra
     const current = useSelector((state) => state.chatReducer.value.current)
     const filesAndMedia = useSelector((state) => state.chatReducer.value.filesAndMedia)
 
+    const [isFocused, setIsFocused] = useState(false)
+
     //Nicknames
     if(value.id === current.id){
         if(current.nicknames){
@@ -143,6 +145,20 @@ export default function SentMessage({index, value, optionSelect, timestamp, arra
                 selected: e
             }
         }))
+    }
+
+    function doubleClick(e){
+        var target = e.target
+
+        //if(!target.classList.contains('focused-message')){
+        //    setIsFocused(true)
+        //    target.classList.add('focused-message')
+        //} else {
+        //    setIsFocused(false)
+        //    target.classList.remove('focused-message')
+        //}
+        //
+        //console.log(e.target)
     }
 
     return(
@@ -320,7 +336,11 @@ export default function SentMessage({index, value, optionSelect, timestamp, arra
                 }
                 {
                     (only_emoji !== "" && !file && !filePath) &&
-                    <div className="message" style={{backgroundColor: chat_settings.color, borderRadius: styleMessageBuble()}}>
+                    <div 
+                        className="message" 
+                        onDoubleClick={doubleClick}
+                        style={{backgroundColor: chat_settings.color, borderRadius: styleMessageBuble()}}
+                    >
                         {
                             !url ?
                             `${value.text}`

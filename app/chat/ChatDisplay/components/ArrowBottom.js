@@ -23,7 +23,7 @@ export default function ArrowBottom(){
     function isTypingScrollDetect(e){
         setIsListening(true)
         var chatList = document.querySelector('.chat-list-wrapper')
-        var position = chatList.scrollTop / (chatList.scrollHeight - chatList.clientHeight)
+        var position = chatList?.scrollTop / (chatList?.scrollHeight - chatList?.clientHeight)
 
         if(position < 0.9){
             setArrowBotton(true)

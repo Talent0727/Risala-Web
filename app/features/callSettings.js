@@ -9,6 +9,7 @@ const initialState = {
     joined: [],
     initiator: false,
     initiatorID: undefined,
+    isMinimised: false,
     isTimer: false,
     timer: 0,
     timeStamp: '',

@@ -765,3 +765,16 @@
         transform: initial;
     }
 }
+
+.focused-message{
+    animation: focusMessage 600ms ease forwards;
+}
+
+@keyframes focusMessage {
+    from {
+        margin: 0;
+    } 
+    to {
+        margin: 10px;
+    }
+}

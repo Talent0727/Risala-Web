@@ -22,6 +22,10 @@
     }
 }
 
+.mock{
+    overflow: hidden;
+}
+
 @keyframes skeleton {
     to{
         transform: translateX(100%);
