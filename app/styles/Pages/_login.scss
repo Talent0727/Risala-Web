@@ -111,10 +111,10 @@
                 
             }
             #wrong-password{
-                display: none;
+                display: flex;
                 flex-direction: row;
                 background-color: rgb(206, 55, 55);
-                width: 300px;
+                width: min(300px, 80%);
                 padding: 20px;
                 border-radius: 6px;
                 align-items: center;
@@ -134,6 +134,21 @@
                 font-size: 18px;
                 &:hover{
                     cursor: pointer;
+                }
+            }
+            .new-account{
+                display: flex;
+                width: min(300px, 80%);
+                flex-direction: row;
+                font-size: 16px;
+                margin: 0 0 10px 0px;
+                .create-account{
+                    margin-left: 10px;
+                    color: $yellow;
+                    &:hover{
+                        cursor: pointer;
+                        text-decoration: underline;
+                    }
                 }
             }
         }

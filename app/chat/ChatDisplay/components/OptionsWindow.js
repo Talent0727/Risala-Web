@@ -21,7 +21,7 @@ export default function OptionsWindow({chatDisplayWindow}){
             chatMainWindow.addEventListener('click', clickDetection)
         } else if(!moreOptions.visible){
             setIsListening(false)
-            chatMainWindow.removeEventListener('click', clickDetection)
+            chatMainWindow?.removeEventListener('click', clickDetection)
         }
 
         return(() => {

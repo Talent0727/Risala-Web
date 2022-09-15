@@ -117,6 +117,11 @@
                 border-radius: 6px;
                 margin-left: 10px;
             }
+            &.round{
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+            }
         }
     }
     .search-result-window{

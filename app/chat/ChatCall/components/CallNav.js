@@ -176,11 +176,14 @@ export default function CallNav({ socket, screenShare, stopScreenShare }){
                 isMinimised: true
             }))
         } else if(callSettings.isMinimised){
-            document.querySelector('.call-window').style.top = 0;
-            document.querySelector('.call-window').style.left = 0;
-            dispatch(callSettingReducer({
-                isMinimised: false
-            }))
+            document.querySelector('.call-window').classList.add('expand')
+            setTimeout(() => {
+                document.querySelector('.call-window').style.top = 0;
+                document.querySelector('.call-window').style.left = 0;
+                dispatch(callSettingReducer({
+                    isMinimised: false
+                }))
+            }, 600);
         }
     }
 

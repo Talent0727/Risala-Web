@@ -111,7 +111,7 @@ export default function ChatDisplay({current, inputRef, chat, locale, USER_DATA}
         }
 
         return() => {
-            if(moreMessage && chatDisplayWindow){
+            if(moreMessage && chatDisplayWindow?.current){
                 chatDisplayWindow.current.removeEventListener('scroll', scrollDetect)
             }
         }
@@ -129,7 +129,7 @@ export default function ChatDisplay({current, inputRef, chat, locale, USER_DATA}
     }, [reply])
 
     function scrollDetect(e){
-        if(document.querySelector('.chat-list-wrapper').scrollTop === 0 && moreMessage && document.querySelector('.chat-list-wrapper').childElementCount >= 100 && !loading){
+        if(document.querySelector('.chat-list-wrapper')?.scrollTop === 0 && moreMessage && document.querySelector('.chat-list-wrapper').childElementCount >= 100 && !loading){
             setChatLoading(true)
             postRequest('chat/chat', {
                 chat_id: current.id,

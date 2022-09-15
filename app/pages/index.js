@@ -111,6 +111,8 @@ export default function Index(){
 
     // Check if user exists
     useEffect(() => {
+        resize();
+
         if (localStorage.getItem('user')) {
             var user = JSON.parse(localStorage.getItem('user'))
 
@@ -195,67 +197,75 @@ export default function Index(){
                 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"></link>
                 <title>{`Risala | Codenoury`}</title>
             </Head>
-                <MobileErrorWindow
-                    style={isMobile ? {display: 'block'} : null}
-                    locale={locale}
-                />
-                <div 
-                    className="chat"
-                    user_id={USER_DATA.account_id}
-                    style={isChat_window ? {filter: "blur(2px)"} : isMobile ? { display: 'none'} : null}
-                >
-                    <ChatNavbar 
-                        USER_DATA={USER_DATA} 
+                {
+                    isMobile &&
+                    <MobileErrorWindow
+                        style={isMobile ? {display: 'block'} : null}
                         locale={locale}
                     />
-                    {
-                        (access === true) ? 
-                        <div className="chat-wrapper">
-                            <ChatSideMenu socket={socket} />
-                            <div 
-                                className="chat-main"
-                                style={{width: `${width}px`}}
-                            >
-                                <ChatTop 
-                                    setWidth={setWidth}
-                                    socket={socket}
-                                />
-                                <ChatDisplay 
-                                    socket={socket}
-                                    inputRef={inputRef}
-                                    chat={chat}
-                                    locale={locale}
-                                    current={current}
-                                    USER_DATA={USER_DATA}
-                                />
-                                <ChatBottom 
-                                    socket={socket}
-                                    inputRef={inputRef}
-                                />
-                            </div>
-                            <ChatSettings 
+                }
+                {
+                    !isMobile &&
+                    <>
+                        <div 
+                            className="chat"
+                            user_id={USER_DATA.account_id}
+                            style={{filter: isChat_window ? "blur(2px)" : null, display: isMobile ? 'none' : null}}
+                        >
+                            <ChatNavbar 
+                                USER_DATA={USER_DATA} 
+                                locale={locale}
+                            />
+                            {
+                                access ? 
+                                <div className="chat-wrapper">
+                                    <ChatSideMenu socket={socket} />
+                                    <div 
+                                        className="chat-main"
+                                        style={{width: `${width}px`}}
+                                    >
+                                        <ChatTop 
+                                            setWidth={setWidth}
+                                            socket={socket}
+                                        />
+                                        <ChatDisplay 
+                                            socket={socket}
+                                            inputRef={inputRef}
+                                            chat={chat}
+                                            locale={locale}
+                                            current={current}
+                                            USER_DATA={USER_DATA}
+                                        />
+                                        <ChatBottom 
+                                            socket={socket}
+                                            inputRef={inputRef}
+                                        />
+                                    </div>
+                                    <ChatSettings 
+                                        locale={locale}
+                                        current={current}
+                                        USER_DATA={USER_DATA}
+                                    />
+                                </div>
+                                :
+                                <div className="chat-wrapper">
+                                    <ChatLoad/>
+                                </div>
+                            }
+                            <ChatCall
                                 locale={locale}
                                 current={current}
                                 USER_DATA={USER_DATA}
                             />
                         </div>
-                        :
-                        <div className="chat-wrapper">
-                            <ChatLoad/>
-                        </div>
-                    }
-                    <ChatCall
-                        locale={locale}
-                        current={current}
-                        USER_DATA={USER_DATA}
-                    />
-                </div>
-                <ChatWindow
-                    socket={socket}
-                    locale={locale}
-                />
-                <ChatImageCarousel />
-                <InformationWindow />
+                        <ChatWindow
+                            socket={socket}
+                            locale={locale}
+                        />
+                        <ChatImageCarousel />
+                        <InformationWindow />
+                    </>
+                }
         </>
     )
 }

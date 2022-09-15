@@ -188,7 +188,9 @@ export default function ChatCall({ locale, current, USER_DATA }){
     const [startPosition, setStartPosition] = useState([0, 0])
 
     function dragWindow(e){
-        if(e.type === "mousedown"){
+        var invalidTargets = ['material-icons', 'timer', 'call-main-buttons'];
+        var correctTarget = invalidTargets.includes(e.target.className) ? false : true
+        if(e.type === "mousedown" && callSettings.isMinimised && correctTarget){
             setIsDragging(true)
             setStartPosition([e.pageX, e.pageY])
             e.stopPropagation()
@@ -209,7 +211,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
         }
 
         function bounceEffect(){
-            console.log("Bounce triggered", callSettings.isMinimised)
             var positionX = document.querySelector('.call-window').getBoundingClientRect().left 
             var positionY = document.querySelector('.call-window').getBoundingClientRect().top 
             var width = document.querySelector('.call-window').clientWidth 
@@ -217,11 +218,49 @@ export default function ChatCall({ locale, current, USER_DATA }){
             var left;
             var top;
             
-            var leftFiftyMark = (window.innerWidth / 2)
-            var leftMax = window.innerWidth - (width + 20)
-            var topFiftyMark = (window.innerHeight / 2)
-            var topMax = window.innerHeight - (height + 20)
+            // Y-Axis Positions
+            var maxY = window.innerHeight - (height + 20)
+            var thirdY = maxY - (maxY/4)
+            var fiftyY = (window.innerHeight / 2)
+            var firstY = fiftyY/2
 
+            // X-Axis Positions
+            var maxX = window.innerWidth - (width + 20)
+            var thirdX = maxX - (maxX / 4)
+            var fiftyX = (window.innerWidth / 2)
+            var firstX = fiftyX/2
+
+
+            // New Approach
+            if(positionY < firstY){ // First row
+                top = '20px'
+                left = positionX < 0 ? '20px' : positionX > maxX ? `${maxX}px` : `${positionX}px`
+            } else if(positionY > firstY && positionY < fiftyY){ // Second row
+                if(positionX < fiftyX){
+                    top = `${positionY}px`
+                    left = '20px'
+                } else {
+                    top = `${positionY}px`
+                    left = `${maxX}px`
+                }
+            } else if(positionY > thirdY && positionY < maxY){ // Third row
+                if(positionX < fiftyX){
+                    top = `${positionY}px`
+                    left = '20px'
+                } else {
+                    top = `${positionY}px`
+                    left = `${maxX}px`
+                }
+            } else { // Last row
+                top = `${maxY}px`
+                if(positionX < fiftyX){
+                    left = positionX < 0 ? '20px' : `${positionX}px`
+                } else {
+                    left = positionX > maxX ? `${maxX}px` : `${positionX}px`
+                }
+            }
+
+            /*
             if(positionY < topFiftyMark && positionX < leftFiftyMark){ // Position Top Left (Done)
                 if(positionX > positionY){
                     top = '20px';
@@ -234,9 +273,15 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     left = '20px';
                 }
             } else if(positionY > topFiftyMark && positionX < leftFiftyMark){ // Position Bottom Left
-                if(positionX < positionY){
-                    top = positionY > topMax ? `${topMax}px` : `${positionY}px`; // Double check this one!!
-                    left = positionX > 20 ? `${positionX}px` : '20px';
+                if(positionX > quarterLeftBottomX){
+                    top = `${topMax}px`
+                    left = `${positionX}px`
+                } else if(positionX < quarterLeftBottomX && positionY > quarterTopY){
+                    top = positionY > topMax ? `${topMax}px` : `${positionY}px`
+                    left = '20px'
+                } else if(positionY < quarterTopY) {
+                    top = `${topMax}px`
+                    left = positionY > leftMax ? `${leftMax}px` : `${positionY}px`
                 } else {
                     top = `${topMax}px`;
                     left = '20px';
@@ -255,22 +300,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             } else if(positionY < topFiftyMark && positionX > leftFiftyMark){ // Position Top Right
 
             }
-
-            /*
-            if(positionY < 20 || positionY < topFiftyMark){
-                top = '20px'
-            } else if(positionY > topMax || positionY > topFiftyMark){
-                top = `${topMax - (height + 20)}px`
-            }
-
-            if(positionX < 20 || positionX < leftFiftyMark){
-                left = "20px"
-            } else if(positionX > leftMax || positionX > leftFiftyMark){
-                left = `${leftMax - (width + 20)}px`
-            }
             */
-
-            console.log(left, top)
 
             try {
                 callWindow.currentTarget.animate([{ top: top, left: left, transform: 'translate(0, 0)'}], {
@@ -305,7 +335,6 @@ export default function ChatCall({ locale, current, USER_DATA }){
     }, [isDragging])
 
     useEffect(() => {
-        console.log(callWindow.current)
         if(callSettings.isMinimised && callSettings.purpose === "call"){
             var left = ((window.innerWidth / 2) - 150)
             setDragPosition([left, 20])
@@ -449,7 +478,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
                     }
                     ref={callWindow}
                     onMouseDown={(callSettings.isMinimised && callSettings.purpose === "call") ? dragWindow : null}
-                    style={(callSettings.isMinimised && callSettings.purpose) ? {left: `${dragPosition[0]}px`, top: `${dragPosition[1]}px`} : {top: 0, left: 0}}
+                    style={(callSettings.isMinimised && callSettings.purpose === "call") ? {left: `${dragPosition[0]}px`, top: `${dragPosition[1]}px`} : {top: 0, left: 0}}
                 >
                     <div className="call-window-main">
                         {
@@ -495,6 +524,7 @@ export default function ChatCall({ locale, current, USER_DATA }){
             setCastStream(screenStream)
             screenCastStreamSaver = screenStream
             dispatch(callSettingReducer({
+                isMinimised: false,
                 userSettings: {
                     screenStream: screenStream,
                     isPresenting: true

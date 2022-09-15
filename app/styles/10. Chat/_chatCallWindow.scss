@@ -459,12 +459,69 @@
             }
         }
         &.video{
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            animation: videoCallWidth 600ms ease forwards;
+            background-color: #0000;
            .call-window-main{
-
+            .single-call{
+                .peer-screen{
+                    height: 220px;
+                    top: 0px;
+                    .video-wrapper{
+                        span{
+                            display: none;
+                        }
+                    }
+                }
+                .user-window{
+                    display: none;
+                }
+            }
            }
            .call-window-nav{
-            
+                top: 170px;
+                z-index: 20;
+                .info-wrapper{
+                    display: none;
+                }
            }
         }
+    }
+    &.expand{
+        &.call{
+            animation: callExpand 600ms ease forwards;
+        }
+    }
+}
+
+@keyframes callExpand {
+    from {
+        position: absolute;
+        top: 20px;
+        left: 0;
+        height: 90px;
+        width: 300px;
+        border-radius: 20px;
+        border: 1px solid $white-2;
+    } to {
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vw;
+        border-radius: 0;
+        border: none;
+    }
+}
+
+@keyframes videoCallWidth {
+    from {
+        width: 100vw;
+    } to {
+        top: 20px;
+        left: calc(50% - (482px / 2));
+        width: 482px;
+        height: 222px;
     }
 }
