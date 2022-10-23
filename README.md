@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://www.gatsbyjs.com">
-    <img alt="codenoury-logo" src="https://codenoury.se/assets/logo-long-yellow.svg" width="200" />
+    <img alt="codenoury-logo" src="https://datablock.dev/assets/datablock_logo_long_alternative.svg" width="200" />
   </a>
 </p>
 <h1 align="center">
