@@ -12,7 +12,6 @@
   - [Dependencies](#dependencies)
   - [File Structure](#filestructure)
 
-  
 # Introduction
 # Dependencies
 
