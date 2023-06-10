@@ -14,7 +14,6 @@
 
   
 # Introduction
- 
 # Dependencies
 You can below find all the dependencies (packages) used in this project in order for the application to work. The section will be divided into Client-side dependencies and server-side dependencies.
  
